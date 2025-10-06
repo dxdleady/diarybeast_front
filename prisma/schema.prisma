@@ -1,0 +1,114 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                  String    @id @default(cuid())
+  walletAddress       String    @unique
+  selectedAnimal      String?
+  petName             String?
+  userName            String?
+  userAge             String?
+  diaryGoal           String?
+  onboardingCompleted Boolean   @default(false)
+  coinsBalance        Int       @default(0)
+  livesRemaining      Int       @default(7)
+  currentStreak       Int       @default(0)
+  longestStreak       Int       @default(0)
+  lastEntryDate       DateTime?
+  lastActiveAt        DateTime  @default(now())
+  lastLifeLossCheck   DateTime  @default(now())
+  aiAnalysisEnabled   Boolean   @default(false)
+  activeBackground    String?
+  activeAccessory     String?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  entries         Entry[]
+  purchases       Purchase[]
+  rewards         Reward[]
+  weeklySummaries WeeklySummary[]
+
+  @@index([walletAddress])
+}
+
+model Entry {
+  id                String   @id @default(cuid())
+  userId            String
+  encryptedContent  String   @db.Text
+  signature         String
+  contentHash       String
+  wordCount         Int      @default(0)
+  date              DateTime @default(now())
+  createdAt         DateTime @default(now())
+
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date])
+  @@index([userId])
+}
+
+model Purchase {
+  id          String   @id @default(cuid())
+  userId      String
+  itemType    String
+  itemId      String
+  price       Int
+  txHash      String?
+  purchasedAt DateTime @default(now())
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Reward {
+  id          String   @id @default(cuid())
+  userId      String
+  type        String
+  amount      Int
+  description String
+  txHash      String
+  createdAt   DateTime @default(now())
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model ShopItem {
+  id          String  @id @default(cuid())
+  type        String
+  name        String
+  description String?
+  price       Int
+  imageUrl    String
+  available   Boolean @default(true)
+  sortOrder   Int     @default(0)
+}
+
+model WeeklySummary {
+  id        String   @id @default(cuid())
+  userId    String
+  weekStart DateTime
+  weekEnd   DateTime
+
+  // Plutchik's 8 emotions (0-100%)
+  emotions  Json     // {joy: 45, trust: 60, fear: 20, surprise: 30, sadness: 15, disgust: 10, anger: 25, anticipation: 50}
+
+  summary   String   @db.Text
+  insights  String[] // Array of key insights
+  trend     String   // "improving" | "stable" | "declining"
+
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, weekStart])
+  @@index([userId])
+}
