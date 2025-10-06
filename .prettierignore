@@ -1,0 +1,25 @@
+# Dependencies
+node_modules
+.pnpm-store
+
+# Build outputs
+.next
+out
+dist
+build
+
+# Logs
+*.log
+
+# Environment files
+.env*
+
+# Misc
+.DS_Store
+*.pem
+
+# Prisma
+prisma/migrations
+
+# Contracts
+contracts
