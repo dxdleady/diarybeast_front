@@ -1,4 +1,4 @@
-import { createWalletClient, createPublicClient, http, parseEther } from 'viem';
+import { createWalletClient, createPublicClient, http } from 'viem';
 import { baseSepolia } from 'viem/chains';
 import { privateKeyToAccount } from 'viem/accounts';
 
@@ -32,26 +32,38 @@ const DIARY_TOKEN_ABI = [
   },
 ] as const;
 
-const account = privateKeyToAccount(
-  process.env.OWNER_PRIVATE_KEY as `0x${string}`
-);
+let walletClient: any = null;
+let publicClient: any = null;
 
-const walletClient = createWalletClient({
-  account,
-  chain: baseSepolia,
-  transport: http(),
-});
+function getWalletClient() {
+  if (!walletClient) {
+    const privateKey = process.env.OWNER_PRIVATE_KEY;
+    if (!privateKey) {
+      throw new Error('OWNER_PRIVATE_KEY environment variable is not set');
+    }
+    const account = privateKeyToAccount(privateKey as `0x${string}`);
+    walletClient = createWalletClient({
+      account,
+      chain: baseSepolia,
+      transport: http(),
+    });
+  }
+  return walletClient;
+}
 
-const publicClient = createPublicClient({
-  chain: baseSepolia,
-  transport: http(),
-});
+function getPublicClient() {
+  if (!publicClient) {
+    publicClient = createPublicClient({
+      chain: baseSepolia,
+      transport: http(),
+    });
+  }
+  return publicClient;
+}
 
-export async function mintTokens(
-  userAddress: string,
-  amount: number
-): Promise<string> {
-  const hash = await walletClient.writeContract({
+export async function mintTokens(userAddress: string, amount: number): Promise<string> {
+  const client = getWalletClient();
+  const hash = await client.writeContract({
     address: process.env.NEXT_PUBLIC_DIARY_TOKEN_ADDRESS as `0x${string}`,
     abi: DIARY_TOKEN_ABI,
     functionName: 'mintReward',
@@ -61,11 +73,9 @@ export async function mintTokens(
   return hash;
 }
 
-export async function burnTokens(
-  userAddress: string,
-  amount: number
-): Promise<string> {
-  const hash = await walletClient.writeContract({
+export async function burnTokens(userAddress: string, amount: number): Promise<string> {
+  const client = getWalletClient();
+  const hash = await client.writeContract({
     address: process.env.NEXT_PUBLIC_DIARY_TOKEN_ADDRESS as `0x${string}`,
     abi: DIARY_TOKEN_ABI,
     functionName: 'burnFrom',
@@ -76,7 +86,8 @@ export async function burnTokens(
 }
 
 export async function getTokenBalance(userAddress: string): Promise<number> {
-  const balance = await publicClient.readContract({
+  const client = getPublicClient();
+  const balance = await client.readContract({
     address: process.env.NEXT_PUBLIC_DIARY_TOKEN_ADDRESS as `0x${string}`,
     abi: DIARY_TOKEN_ABI,
     functionName: 'balanceOf',

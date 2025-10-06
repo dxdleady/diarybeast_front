@@ -5,6 +5,7 @@
 /.pnp
 .pnp.js
 .yarn/install-state.gz
+.pnpm-store
 
 # testing
 /coverage
@@ -19,15 +20,20 @@
 # misc
 .DS_Store
 *.pem
+.vscode/
+.idea/
 
 # debug
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
 
 # local env files
 .env*.local
 .env
+!.env.local.example
 
 # vercel
 .vercel
@@ -37,4 +43,11 @@ yarn-error.log*
 next-env.d.ts
 
 # prisma
+prisma/dev.db
+prisma/dev.db-journal
 prisma/migrations
+
+
+# cache
+.turbo
+.eslintcache
