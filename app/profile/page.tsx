@@ -3,7 +3,9 @@
 import { useAccount } from 'wagmi';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { MonthlyCalendar } from '@/components/MonthlyCalendar';
+import { Pet } from '@/components/Pet';
+
+type TabType = 'overview' | 'achievements' | 'analysis';
 
 export default function Profile() {
   const { address } = useAccount();
@@ -12,6 +14,7 @@ export default function Profile() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [aiAnalysisEnabled, setAiAnalysisEnabled] = useState(false);
+  const [activeTab, setActiveTab] = useState<TabType>('overview');
 
   useEffect(() => {
     loadUserData();
@@ -65,120 +68,199 @@ export default function Profile() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center">
-        <div>Loading...</div>
+      <div className="min-h-screen bg-bg-dark text-primary flex items-center justify-center">
+        <div className="text-center">
+          <div className="font-mono text-lg mb-4 animate-pulse">Loading...</div>
+          <div className="text-primary/40 font-mono text-sm">Loading Profile</div>
+        </div>
       </div>
     );
   }
 
   if (!userData) {
     return (
-      <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center">
-        <div>User not found</div>
+      <div className="min-h-screen bg-bg-dark text-primary flex items-center justify-center">
+        <div className="text-center">
+          <div className="font-mono text-lg mb-4">User not found</div>
+          <Link href="/" className="text-primary/60 hover:text-primary font-mono text-sm">
+            ← Return Home
+          </Link>
+        </div>
       </div>
     );
   }
 
-  const petImage = userData.selectedAnimal === 'cat'
-    ? '/pets/cat.svg'
-    : '/pets/dog.svg';
+  const tabs = [
+    { id: 'overview' as TabType, label: 'Overview', iconPath: '/assets/pet-profile-tamagochi.svg' },
+    {
+      id: 'achievements' as TabType,
+      label: 'Achievements',
+      iconPath: '/assets/tamagochi-achievements-daily-crypto.svg',
+    },
+    {
+      id: 'analysis' as TabType,
+      label: 'Deep Analysis',
+      iconPath: '/assets/get-hidden-insights-about-your-thoughts--tamagochi.svg',
+    },
+  ];
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-8">
+    <div className="min-h-screen bg-bg-dark text-white p-8">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="mb-8">
           <Link
             href="/diary"
-            className="text-gray-400 hover:text-white transition-colors mb-4 inline-block"
+            className="text-primary/60 hover:text-primary transition-all mb-4 inline-block font-mono text-sm hover:drop-shadow-[0_0_4px_rgba(0,229,255,0.4)]"
           >
             ← Back to Diary
           </Link>
-          <h1 className="text-4xl font-bold">Profile</h1>
+          <h1 className="text-4xl font-display font-bold text-primary drop-shadow-[0_0_10px_rgba(0,229,255,0.3)]">
+            Profile
+          </h1>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* Pet Image */}
-          <div className="bg-gray-800 rounded-xl p-8">
-            <h2 className="text-xl font-semibold mb-6">Your Beast</h2>
-            <div className="text-center">
-              <div className="w-64 h-64 mx-auto bg-gray-700 rounded-full flex items-center justify-center mb-4 overflow-hidden">
+        {/* Tabs */}
+        <div className="flex gap-2 mb-6 border-b border-primary/20 pb-2">
+          {tabs.map((tab) => {
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center gap-2 px-4 py-3 rounded-t-lg transition-all font-mono ${
+                  isActive
+                    ? 'bg-primary/20 text-primary border-b-2 border-primary shadow-glow-cyan'
+                    : 'text-primary/60 hover:bg-primary/10 hover:text-primary'
+                }`}
+              >
                 <img
-                  src={petImage}
-                  alt={userData.selectedAnimal}
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    // Fallback to emoji if image not found
-                    e.currentTarget.style.display = 'none';
-                    const parent = e.currentTarget.parentElement;
-                    if (parent) {
-                      parent.innerHTML = `<div class="text-9xl">${
-                        userData.selectedAnimal === 'cat' ? '😺' : '🐶'
-                      }</div>`;
-                    }
+                  src={tab.iconPath}
+                  alt={tab.label}
+                  className="w-6 h-6"
+                  style={{
+                    filter: isActive
+                      ? 'brightness(0) saturate(100%) invert(71%) sepia(86%) saturate(2872%) hue-rotate(155deg) brightness(101%) contrast(101%)'
+                      : 'brightness(0) saturate(100%) invert(71%) sepia(86%) saturate(2872%) hue-rotate(155deg) brightness(101%) contrast(101%) opacity(0.6)',
                   }}
                 />
-              </div>
-              <div className="text-2xl font-bold capitalize mb-2">
-                {userData.selectedAnimal}
-              </div>
-              <div className="text-gray-400">
-                Health: {userData.livesRemaining}/7 ❤️
-              </div>
+                <span className="font-medium text-sm">{tab.label}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Overview Tab */}
+        {activeTab === 'overview' && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Pet - Current State */}
+            <div className="bg-bg-card border border-primary/20 rounded-xl p-6 hover:border-primary/40 transition-all shadow-glow-cyan">
+              <h2 className="text-lg font-display font-semibold mb-4 text-primary">Your Beast</h2>
+              <Pet
+                animal={userData.selectedAnimal}
+                livesRemaining={userData.livesRemaining}
+                hasWrittenToday={
+                  userData.lastEntryDate
+                    ? new Date(userData.lastEntryDate).toDateString() === new Date().toDateString()
+                    : false
+                }
+                petName={userData.petName}
+                happiness={userData.happiness}
+                lastFeedTime={userData.lastFeedTime}
+                lastPlayTime={userData.lastPlayTime}
+              />
             </div>
-          </div>
 
-          {/* Stats */}
-          <div className="bg-gray-800 rounded-xl p-8">
-            <h2 className="text-xl font-semibold mb-6">Statistics</h2>
-            <div className="space-y-4">
-              <div className="flex justify-between items-center p-4 bg-gray-700 rounded-lg">
-                <span className="text-gray-300">💎 DIARY Tokens</span>
-                <span className="text-2xl font-bold text-blue-400">
-                  {userData.coinsBalance}
-                </span>
-              </div>
-              <div className="flex justify-between items-center p-4 bg-gray-700 rounded-lg">
-                <span className="text-gray-300">🔥 Current Streak</span>
-                <span className="text-2xl font-bold text-orange-400">
-                  {userData.currentStreak} days
-                </span>
-              </div>
-              <div className="flex justify-between items-center p-4 bg-gray-700 rounded-lg">
-                <span className="text-gray-300">🏆 Longest Streak</span>
-                <span className="text-2xl font-bold text-yellow-400">
-                  {userData.longestStreak} days
-                </span>
-              </div>
-              <div className="flex justify-between items-center p-4 bg-gray-700 rounded-lg">
-                <span className="text-gray-300">📝 Total Entries</span>
-                <span className="text-2xl font-bold text-green-400">
-                  {userData.totalEntries}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Settings */}
-          <div className="bg-gray-800 rounded-xl p-8 md:col-span-2">
-            <h2 className="text-xl font-semibold mb-6">Settings</h2>
-
-            <div className="space-y-6">
-              {/* AI Analysis Permission */}
-              <div className="flex items-start justify-between p-6 bg-gray-700 rounded-lg">
-                <div className="flex-1 pr-4">
-                  <h3 className="font-semibold mb-2">AI Analysis</h3>
-                  <p className="text-sm text-gray-400">
-                    Allow AI to read and analyze your diary entries to provide
-                    insights, mood tracking, and personalized recommendations.
-                    Your entries remain encrypted and private.
-                  </p>
-                  <p className="text-xs text-gray-500 mt-2">
-                    Coming soon: AI-powered insights and analysis
-                  </p>
+            {/* Stats - Compact */}
+            <div className="bg-bg-card border border-primary/20 rounded-xl p-6 hover:border-primary/40 transition-all shadow-glow-cyan md:col-span-2">
+              <h2 className="text-lg font-display font-semibold mb-4 text-primary">Statistics</h2>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="flex justify-between items-center p-3 bg-bg-lcd/30 rounded-lg border border-primary/10 hover:border-primary/30 transition-all">
+                  <div className="flex items-center gap-2">
+                    <img
+                      src="/assets/tamagochi-coin.svg"
+                      alt="DIARY"
+                      className="w-5 h-5"
+                      style={{
+                        filter:
+                          'brightness(0) saturate(100%) invert(80%) sepia(48%) saturate(1000%) hue-rotate(2deg) brightness(104%) contrast(101%)',
+                      }}
+                    />
+                    <span className="text-xs text-primary/70 font-mono">DIARY</span>
+                  </div>
+                  <span className="text-lg font-bold text-tokens font-mono drop-shadow-[0_0_6px_rgba(255,215,0,0.5)]">
+                    {userData.coinsBalance}
+                  </span>
                 </div>
-                <div className="flex-shrink-0">
-                  <label className="relative inline-block w-14 h-8">
+                <div className="flex justify-between items-center p-3 bg-bg-lcd/30 rounded-lg border border-primary/10 hover:border-primary/30 transition-all">
+                  <div className="flex items-center gap-2">
+                    <img
+                      src="/assets/tamagochi-achievements-daily-crypto.svg"
+                      alt="Streak"
+                      className="w-5 h-5"
+                      style={{
+                        filter:
+                          'brightness(0) saturate(100%) invert(69%) sepia(52%) saturate(2288%) hue-rotate(359deg) brightness(101%) contrast(101%)',
+                      }}
+                    />
+                    <span className="text-xs text-primary/70 font-mono">STREAK</span>
+                  </div>
+                  <span className="text-lg font-bold text-streak font-mono drop-shadow-[0_0_6px_rgba(255,165,0,0.5)]">
+                    {userData.currentStreak}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center p-3 bg-bg-lcd/30 rounded-lg border border-primary/10 hover:border-primary/30 transition-all">
+                  <div className="flex items-center gap-2">
+                    <img
+                      src="/assets/tamagochi-achievements-daily-crypto.svg"
+                      alt="Best"
+                      className="w-5 h-5"
+                      style={{
+                        filter:
+                          'brightness(0) saturate(100%) invert(80%) sepia(48%) saturate(1000%) hue-rotate(2deg) brightness(104%) contrast(101%)',
+                      }}
+                    />
+                    <span className="text-xs text-primary/70 font-mono">BEST</span>
+                  </div>
+                  <span className="text-lg font-bold text-tokens font-mono drop-shadow-[0_0_6px_rgba(255,215,0,0.5)]">
+                    {userData.longestStreak}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center p-3 bg-bg-lcd/30 rounded-lg border border-primary/10 hover:border-primary/30 transition-all">
+                  <div className="flex items-center gap-2">
+                    <img
+                      src="/assets/diary-beast-tamagochi.svg"
+                      alt="Total"
+                      className="w-5 h-5"
+                      style={{
+                        filter:
+                          'brightness(0) saturate(100%) invert(71%) sepia(86%) saturate(2872%) hue-rotate(155deg) brightness(101%) contrast(101%)',
+                      }}
+                    />
+                    <span className="text-xs text-primary/70 font-mono">TOTAL</span>
+                  </div>
+                  <span className="text-lg font-bold text-success font-mono drop-shadow-[0_0_6px_rgba(57,255,20,0.5)]">
+                    {userData.totalEntries}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Settings - Compact */}
+            <div className="bg-bg-card border border-primary/20 rounded-xl p-6 md:col-span-3 hover:border-primary/40 transition-all shadow-glow-cyan">
+              <h2 className="text-lg font-display font-semibold mb-4 text-primary">Settings</h2>
+              <div className="space-y-4">
+                {/* AI Analysis Toggle */}
+                <div className="flex items-center justify-between p-4 bg-bg-lcd/30 rounded-lg border border-primary/10 hover:border-primary/30 transition-all">
+                  <div className="flex-1">
+                    <h3 className="font-display font-semibold text-sm text-primary mb-1">
+                      AI Analysis
+                    </h3>
+                    <p className="text-xs text-primary/50 font-mono">
+                      Enable AI-powered insights and mood tracking
+                    </p>
+                  </div>
+                  <label className="relative inline-block w-12 h-6 ml-4">
                     <input
                       type="checkbox"
                       checked={aiAnalysisEnabled}
@@ -186,28 +268,107 @@ export default function Profile() {
                       disabled={saving}
                       className="opacity-0 w-0 h-0 peer"
                     />
-                    <span className="absolute cursor-pointer inset-0 bg-gray-600 rounded-full transition-colors peer-checked:bg-blue-600 peer-disabled:opacity-50">
-                      <span className="absolute left-1 bottom-1 bg-white w-6 h-6 rounded-full transition-transform peer-checked:translate-x-6"></span>
+                    <span className="absolute cursor-pointer inset-0 bg-inactive rounded-full transition-colors peer-checked:bg-primary peer-disabled:opacity-50 border border-primary/20 peer-checked:shadow-glow-cyan">
+                      <span className="absolute left-1 top-1 bg-bg-dark w-4 h-4 rounded-full transition-transform peer-checked:translate-x-6 border border-primary/40"></span>
                     </span>
                   </label>
                 </div>
-              </div>
 
-              {/* Wallet Info */}
-              <div className="p-6 bg-gray-700 rounded-lg">
-                <h3 className="font-semibold mb-2">Wallet Address</h3>
-                <p className="text-sm text-gray-400 font-mono break-all">
-                  {userData.walletAddress}
-                </p>
+                {/* Wallet Info */}
+                <div className="p-4 bg-bg-lcd/30 rounded-lg border border-primary/10 hover:border-primary/30 transition-all">
+                  <h3 className="font-display font-semibold text-sm mb-2 text-primary">
+                    Wallet Address
+                  </h3>
+                  <p className="text-xs text-primary/60 font-mono break-all">
+                    {userData.walletAddress}
+                  </p>
+                </div>
               </div>
             </div>
           </div>
+        )}
 
-          {/* Monthly Calendar */}
-          <div className="md:col-span-2">
-            <MonthlyCalendar entries={entries} />
+        {/* Achievements Tab */}
+        {activeTab === 'achievements' && (
+          <div className="bg-bg-card border border-primary/20 rounded-xl p-8 hover:border-primary/40 transition-all shadow-glow-cyan">
+            <div className="text-center py-12">
+              <img
+                src="/assets/tamagochi-achievements-daily-crypto.svg"
+                alt="Achievements"
+                className="w-24 h-24 mx-auto mb-6"
+                style={{
+                  filter:
+                    'brightness(0) saturate(100%) invert(80%) sepia(48%) saturate(1000%) hue-rotate(2deg) brightness(104%) contrast(101%)',
+                }}
+              />
+              <h2 className="text-2xl font-display font-bold text-primary mb-3">
+                Achievements Coming Soon
+              </h2>
+              <p className="text-primary/60 font-mono text-sm max-w-md mx-auto">
+                Track your milestones, streaks, and special accomplishments. Earn badges for your
+                diary journey!
+              </p>
+              <div className="mt-6 flex gap-4 justify-center flex-wrap">
+                <div className="bg-bg-lcd/30 rounded-lg p-4 border border-primary/10 w-32">
+                  <div className="text-2xl mb-2">🔥</div>
+                  <div className="text-xs text-primary/50 font-mono">Streak Master</div>
+                </div>
+                <div className="bg-bg-lcd/30 rounded-lg p-4 border border-primary/10 w-32">
+                  <div className="text-2xl mb-2">✍️</div>
+                  <div className="text-xs text-primary/50 font-mono">Prolific Writer</div>
+                </div>
+                <div className="bg-bg-lcd/30 rounded-lg p-4 border border-primary/10 w-32">
+                  <div className="text-2xl mb-2">⭐</div>
+                  <div className="text-xs text-primary/50 font-mono">First Entry</div>
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
+        )}
+
+        {/* Deep Analysis Tab */}
+        {activeTab === 'analysis' && (
+          <div className="bg-bg-card border border-primary/20 rounded-xl p-8 hover:border-primary/40 transition-all shadow-glow-cyan">
+            <div className="text-center py-12">
+              <img
+                src="/assets/get-hidden-insights-about-your-thoughts--tamagochi.svg"
+                alt="Deep Analysis"
+                className="w-24 h-24 mx-auto mb-6"
+                style={{
+                  filter:
+                    'brightness(0) saturate(100%) invert(71%) sepia(86%) saturate(2872%) hue-rotate(155deg) brightness(101%) contrast(101%)',
+                }}
+              />
+              <h2 className="text-2xl font-display font-bold text-primary mb-3">
+                Deep Notes Analysis Coming Soon
+              </h2>
+              <p className="text-primary/60 font-mono text-sm max-w-md mx-auto mb-6">
+                AI-powered insights into your writing patterns, emotional trends, and personal
+                growth over time.
+              </p>
+              <div className="bg-bg-lcd/30 rounded-lg p-6 border border-primary/10 max-w-md mx-auto">
+                <div className="space-y-3 text-sm font-mono text-left">
+                  <div className="flex items-center gap-3">
+                    <span className="text-primary">✓</span>
+                    <span className="text-primary/70">Sentiment analysis</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-primary">✓</span>
+                    <span className="text-primary/70">Writing pattern detection</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-primary">✓</span>
+                    <span className="text-primary/70">Topic clustering</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-primary">✓</span>
+                    <span className="text-primary/70">Growth tracking</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -42,35 +42,41 @@ export function DailyTimer({ hasWrittenToday }: DailyTimerProps) {
   const formatTime = (num: number) => String(num).padStart(2, '0');
 
   return (
-    <div className="bg-gradient-to-r from-blue-900/50 to-purple-900/50 border border-blue-700/50 rounded-lg p-2">
+    <div className="bg-bg-card border border-primary/20 rounded-lg p-2 shadow-glow-cyan">
       <div className="text-center">
         {hasWrittenToday ? (
           <>
-            <div className="text-xs text-gray-300 mb-0.5 flex items-center justify-center gap-1">
+            <div className="text-xs text-success mb-0.5 flex items-center justify-center gap-1 font-mono">
               <span>✅</span>
-              <span>Entry claimed!</span>
+              <span>ENTRY CLAIMED!</span>
             </div>
-            <div className="text-xs text-gray-500 mb-1">Next entry in:</div>
+            <div className="text-xs text-primary/50 mb-1 font-mono">Next entry in:</div>
           </>
         ) : (
-          <div className="text-xs text-orange-400 mb-1 flex items-center justify-center gap-1 animate-pulse">
+          <div className="text-xs text-warning mb-1 flex items-center justify-center gap-1 animate-pulse font-mono">
             <span>⏰</span>
-            <span>Time left:</span>
+            <span>TIME LEFT:</span>
           </div>
         )}
 
         {/* Countdown Timer */}
         <div className="flex items-center justify-center gap-1">
-          <div className="bg-gray-800 rounded px-1.5 py-1">
-            <div className="text-sm font-bold text-white">{formatTime(timeLeft.hours)}</div>
+          <div className="bg-bg-lcd/50 rounded px-1.5 py-1 border border-primary/20">
+            <div className="text-sm font-bold text-primary font-mono drop-shadow-[0_0_4px_rgba(0,229,255,0.4)]">
+              {formatTime(timeLeft.hours)}
+            </div>
           </div>
-          <div className="text-sm text-gray-500">:</div>
-          <div className="bg-gray-800 rounded px-1.5 py-1">
-            <div className="text-sm font-bold text-white">{formatTime(timeLeft.minutes)}</div>
+          <div className="text-sm text-primary/40 font-mono">:</div>
+          <div className="bg-bg-lcd/50 rounded px-1.5 py-1 border border-primary/20">
+            <div className="text-sm font-bold text-primary font-mono drop-shadow-[0_0_4px_rgba(0,229,255,0.4)]">
+              {formatTime(timeLeft.minutes)}
+            </div>
           </div>
-          <div className="text-sm text-gray-500">:</div>
-          <div className="bg-gray-800 rounded px-1.5 py-1">
-            <div className="text-sm font-bold text-white">{formatTime(timeLeft.seconds)}</div>
+          <div className="text-sm text-primary/40 font-mono">:</div>
+          <div className="bg-bg-lcd/50 rounded px-1.5 py-1 border border-primary/20">
+            <div className="text-sm font-bold text-primary font-mono drop-shadow-[0_0_4px_rgba(0,229,255,0.4)]">
+              {formatTime(timeLeft.seconds)}
+            </div>
           </div>
         </div>
       </div>

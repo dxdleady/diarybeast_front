@@ -9,7 +9,9 @@
     "lint": "next lint",
     "db:seed": "tsx prisma/seed.ts",
     "postinstall": "prisma generate",
-    "prepare": "husky"
+    "prepare": "husky",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
@@ -25,6 +27,7 @@
     "@prisma/client": "^5.22.0",
     "@tanstack/react-query": "^5.59.20",
     "canvas-confetti": "^1.9.3",
+    "clsx": "^2.1.1",
     "crypto-js": "^4.2.0",
     "groq-sdk": "^0.33.0",
     "next": "15.0.3",
@@ -32,11 +35,18 @@
     "react-dom": "^19.0.0",
     "react-hot-toast": "^2.6.0",
     "react-markdown": "^10.1.0",
+    "tailwind-merge": "^3.3.1",
     "viem": "^2.21.19",
     "wagmi": "^2.12.17",
     "zustand": "^5.0.1"
   },
   "devDependencies": {
+    "@chromatic-com/storybook": "^4.1.1",
+    "@storybook/addon-a11y": "^9.1.10",
+    "@storybook/addon-docs": "^9.1.10",
+    "@storybook/addon-onboarding": "^9.1.10",
+    "@storybook/nextjs-vite": "^9.1.10",
+    "@storybook/react": "^9.1.10",
     "@types/canvas-confetti": "^1.9.0",
     "@types/crypto-js": "^4.2.2",
     "@types/node": "^20",
@@ -46,11 +56,14 @@
     "dotenv-cli": "^10.0.0",
     "eslint": "^8",
     "eslint-config-next": "15.0.3",
+    "eslint-plugin-storybook": "^9.1.10",
     "husky": "^9.1.7",
     "lint-staged": "^16.2.3",
+    "playwright": "^1.56.0",
     "postcss": "^8",
     "prettier": "^3.6.2",
     "prisma": "^5.22.0",
+    "storybook": "^9.1.10",
     "tailwindcss": "^3.4.1",
     "tsx": "^4.20.6",
     "typescript": "^5"

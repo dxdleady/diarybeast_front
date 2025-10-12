@@ -57,13 +57,15 @@ export function MonthlyCalendar({ entries }: MonthlyCalendarProps) {
   const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
   return (
-    <div className="bg-gray-800 rounded-xl p-6">
-      <h2 className="text-xl font-semibold mb-4">{monthName}</h2>
+    <div className="bg-bg-card border border-primary/20 rounded-xl p-6 shadow-glow-cyan">
+      <h2 className="text-xl font-display font-semibold mb-4 text-primary drop-shadow-[0_0_6px_rgba(0,229,255,0.3)]">
+        {monthName}
+      </h2>
 
       {/* Week day headers */}
       <div className="grid grid-cols-7 gap-2 mb-2">
         {weekDays.map((day) => (
-          <div key={day} className="text-center text-xs font-semibold text-gray-400">
+          <div key={day} className="text-center text-xs font-semibold text-primary/60 font-mono">
             {day}
           </div>
         ))}
@@ -85,23 +87,23 @@ export function MonthlyCalendar({ entries }: MonthlyCalendarProps) {
           return (
             <div
               key={day}
-              className={`aspect-square flex items-center justify-center rounded-lg text-sm font-semibold transition-all ${
+              className={`aspect-square flex items-center justify-center rounded text-sm font-semibold transition-all font-mono border ${
                 hasEntryForDay
-                  ? 'bg-green-500 text-white'
+                  ? 'bg-success/20 text-success border-success/40 drop-shadow-[0_0_4px_rgba(57,255,20,0.4)]'
                   : isTodayDate
-                  ? 'bg-orange-500/30 text-orange-400 border-2 border-orange-500'
-                  : future
-                  ? 'bg-gray-900 text-gray-600 cursor-not-allowed'
-                  : 'bg-gray-700 text-gray-400'
+                    ? 'bg-warning/20 text-warning border-warning animate-pulse drop-shadow-[0_0_4px_rgba(255,165,0,0.4)]'
+                    : future
+                      ? 'bg-bg-lcd/30 text-primary/30 border-primary/10 cursor-not-allowed'
+                      : 'bg-bg-lcd/30 text-primary/50 border-primary/20'
               }`}
               title={
                 hasEntryForDay
                   ? `Entry written on ${day}`
                   : isTodayDate
-                  ? 'Today'
-                  : future
-                  ? 'Future day'
-                  : 'No entry'
+                    ? 'Today'
+                    : future
+                      ? 'Future day'
+                      : 'No entry'
               }
             >
               {hasEntryForDay ? '✓' : day}
@@ -111,18 +113,18 @@ export function MonthlyCalendar({ entries }: MonthlyCalendarProps) {
       </div>
 
       {/* Legend */}
-      <div className="mt-4 flex items-center justify-center gap-4 text-xs">
+      <div className="mt-4 flex items-center justify-center gap-4 text-xs font-mono">
         <div className="flex items-center gap-1">
-          <div className="w-4 h-4 rounded bg-green-500"></div>
-          <span className="text-gray-400">Entry written</span>
+          <div className="w-4 h-4 rounded bg-success/20 border border-success/40"></div>
+          <span className="text-primary/60">Written</span>
         </div>
         <div className="flex items-center gap-1">
-          <div className="w-4 h-4 rounded bg-orange-500/30 border-2 border-orange-500"></div>
-          <span className="text-gray-400">Today</span>
+          <div className="w-4 h-4 rounded bg-warning/20 border border-warning"></div>
+          <span className="text-primary/60">Today</span>
         </div>
         <div className="flex items-center gap-1">
-          <div className="w-4 h-4 rounded bg-gray-700"></div>
-          <span className="text-gray-400">Missed</span>
+          <div className="w-4 h-4 rounded bg-bg-lcd/30 border border-primary/20"></div>
+          <span className="text-primary/60">Missed</span>
         </div>
       </div>
     </div>

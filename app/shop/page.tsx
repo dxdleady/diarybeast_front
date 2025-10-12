@@ -133,23 +133,28 @@ export default function Shop() {
 
   // Background colors based on activeBackground
   const getBackgroundClass = () => {
-    if (!userData?.activeBackground) return 'bg-gray-900';
+    if (!userData?.activeBackground) return 'bg-bg-dark';
 
     const bgMap: Record<string, string> = {
-      'bg-default': 'bg-gray-900',
-      'bg-sunset': 'bg-gradient-to-br from-orange-900 via-purple-900 to-gray-900',
-      'bg-ocean': 'bg-gradient-to-br from-blue-900 via-cyan-900 to-gray-900',
-      'bg-forest': 'bg-gradient-to-br from-green-900 via-emerald-900 to-gray-900',
-      'bg-space': 'bg-gradient-to-br from-indigo-900 via-purple-900 to-black',
+      'bg-default': 'bg-bg-dark',
+      'bg-sunset': 'bg-gradient-to-br from-orange-900 via-purple-900 to-[var(--bg-dark)]',
+      'bg-ocean': 'bg-gradient-to-br from-secondary via-primary/20 to-[var(--bg-dark)]',
+      'bg-forest': 'bg-gradient-to-br from-green-900 via-accent/20 to-[var(--bg-dark)]',
+      'bg-space': 'bg-gradient-to-br from-secondary via-purple-900 to-black',
     };
 
-    return bgMap[userData.activeBackground] || 'bg-gray-900';
+    return bgMap[userData.activeBackground] || 'bg-bg-dark';
   };
 
   if (loading) {
     return (
-      <div className={`h-screen text-white flex items-center justify-center ${getBackgroundClass()}`}>
-        <div>Loading shop...</div>
+      <div
+        className={`h-screen text-primary flex items-center justify-center ${getBackgroundClass()}`}
+      >
+        <div className="text-center">
+          <div className="font-mono text-lg mb-4 animate-pulse">Loading...</div>
+          <div className="text-primary/40 font-mono text-sm">Loading Shop</div>
+        </div>
       </div>
     );
   }
@@ -167,9 +172,24 @@ export default function Shop() {
   });
 
   const tabs = [
-    { id: 'persona' as TabType, label: 'Persona Items', icon: '🎨', description: 'Backgrounds & Themes' },
-    { id: 'pet' as TabType, label: 'Pet Accessories', icon: '✨', description: 'Coming Soon' },
-    { id: 'animals' as TabType, label: 'Collectible Pets', icon: '🐾', description: 'NFT Collabs' },
+    {
+      id: 'persona' as TabType,
+      label: 'Persona Items',
+      iconPath: '/assets/tamagochi-personal-items---like-food---toys--games.svg',
+      description: 'Backgrounds & Themes',
+    },
+    {
+      id: 'pet' as TabType,
+      label: 'Pet Accessories',
+      iconPath: '/assets/tamagochi-pet-accessorizes.svg',
+      description: 'Coming Soon',
+    },
+    {
+      id: 'animals' as TabType,
+      label: 'Collectible Pets',
+      iconPath: '/assets/colletible-tamagochies---it-will-be-diffrenet-coll.svg',
+      description: 'NFT Collabs',
+    },
   ];
 
   return (
@@ -178,15 +198,28 @@ export default function Shop() {
         {/* Header */}
         <div className="mb-8 flex items-center justify-between">
           <div>
-            <h1 className="text-4xl font-bold mb-2">Shop</h1>
-            <p className="text-gray-400">Customize your diary experience</p>
+            <h1 className="text-4xl font-display font-bold mb-2 text-primary drop-shadow-[0_0_10px_rgba(0,229,255,0.3)]">
+              Shop
+            </h1>
+            <p className="text-primary/60 font-mono">Customize your diary experience</p>
           </div>
           <div className="text-right">
-            <div className="text-sm text-gray-400 mb-1">Your Balance</div>
-            <div className="text-3xl font-bold">💎 {balance} DIARY</div>
+            <div className="text-sm text-primary/60 mb-1 font-mono">Your Balance</div>
+            <div className="text-3xl font-bold font-mono text-tokens drop-shadow-[0_0_10px_rgba(255,215,0,0.5)] flex items-center justify-end gap-2">
+              <img
+                src="/assets/tamagochi-coin.svg"
+                alt="DIARY"
+                className="w-8 h-8"
+                style={{
+                  filter:
+                    'brightness(0) saturate(100%) invert(80%) sepia(48%) saturate(1000%) hue-rotate(2deg) brightness(104%) contrast(101%)',
+                }}
+              />
+              {balance}
+            </div>
             <button
               onClick={() => router.push('/diary')}
-              className="mt-2 text-sm text-blue-400 hover:text-blue-300"
+              className="mt-2 text-sm text-primary/60 hover:text-primary font-mono hover:drop-shadow-[0_0_4px_rgba(0,229,255,0.4)] transition-all"
             >
               ← Back to Diary
             </button>
@@ -195,26 +228,34 @@ export default function Shop() {
 
         {/* Tabs */}
         <div className="mb-8">
-          <div className="flex gap-4 border-b border-gray-700">
+          <div className="flex gap-4 border-b border-primary/20">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`px-6 py-4 font-semibold transition-colors relative ${
-                  activeTab === tab.id
-                    ? 'text-white'
-                    : 'text-gray-400 hover:text-gray-300'
+                className={`px-6 py-4 font-semibold transition-all relative ${
+                  activeTab === tab.id ? 'text-primary' : 'text-primary/40 hover:text-primary/70'
                 }`}
               >
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl">{tab.icon}</span>
+                <div className="flex items-center gap-3">
+                  <img
+                    src={tab.iconPath}
+                    alt={tab.label}
+                    className="w-12 h-12"
+                    style={{
+                      filter:
+                        activeTab === tab.id
+                          ? 'brightness(0) saturate(100%) invert(71%) sepia(86%) saturate(2872%) hue-rotate(155deg) brightness(101%) contrast(101%)'
+                          : 'brightness(0) saturate(100%) invert(71%) sepia(86%) saturate(2872%) hue-rotate(155deg) brightness(101%) contrast(101%) opacity(0.4)',
+                    }}
+                  />
                   <div className="text-left">
-                    <div className="font-bold">{tab.label}</div>
-                    <div className="text-xs text-gray-500">{tab.description}</div>
+                    <div className="font-display font-bold">{tab.label}</div>
+                    <div className="text-xs text-primary/50 font-mono">{tab.description}</div>
                   </div>
                 </div>
                 {activeTab === tab.id && (
-                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-blue-500 rounded-t"></div>
+                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-primary rounded-t shadow-glow-cyan"></div>
                 )}
               </button>
             ))}
@@ -222,7 +263,7 @@ export default function Shop() {
         </div>
 
         {/* Items Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
           {filteredItems.map((item) => {
             const owned = purchases.includes(item.id);
             const canAfford = balance >= item.price;
@@ -235,86 +276,123 @@ export default function Shop() {
             return (
               <div
                 key={item.id}
-                className={`bg-gray-800 rounded-xl overflow-hidden border-2 ${
+                className={`bg-bg-card rounded-xl overflow-hidden border-2 ${
                   isActive
-                    ? 'border-blue-500 shadow-lg shadow-blue-500/50'
+                    ? 'border-primary shadow-glow-cyan'
                     : owned
-                    ? 'border-green-500'
-                    : 'border-gray-700'
+                      ? 'border-success'
+                      : 'border-primary/20'
                 } transition-transform hover:scale-105`}
               >
                 {/* Image */}
-                <div className="h-48 bg-gray-700 flex items-center justify-center relative">
+                <div className="h-32 lcd-screen flex items-center justify-center relative">
                   {item.type === 'background' ? (
-                    <div className="text-6xl">🎨</div>
+                    <img
+                      src="/assets/tamagochi-personal-items---like-food---toys--games.svg"
+                      alt="Background"
+                      className="w-14 h-14"
+                      style={{
+                        filter:
+                          'brightness(0) saturate(100%) invert(71%) sepia(86%) saturate(2872%) hue-rotate(155deg) brightness(101%) contrast(101%)',
+                      }}
+                    />
                   ) : item.type === 'animal' ? (
-                    <div className="text-6xl">🐾</div>
+                    <img
+                      src="/assets/colletible-tamagochies---it-will-be-diffrenet-coll.svg"
+                      alt="Animal"
+                      className="w-14 h-14"
+                      style={{
+                        filter:
+                          'brightness(0) saturate(100%) invert(71%) sepia(86%) saturate(2872%) hue-rotate(155deg) brightness(101%) contrast(101%)',
+                      }}
+                    />
                   ) : (
-                    <div className="text-6xl">✨</div>
+                    <img
+                      src="/assets/tamagochi-pet-accessorizes.svg"
+                      alt="Accessory"
+                      className="w-14 h-14"
+                      style={{
+                        filter:
+                          'brightness(0) saturate(100%) invert(71%) sepia(86%) saturate(2872%) hue-rotate(155deg) brightness(101%) contrast(101%)',
+                      }}
+                    />
                   )}
                   {isActive ? (
-                    <div className="absolute top-2 right-2 bg-blue-500 text-white px-3 py-1 rounded-full text-sm font-bold animate-pulse">
-                      ★ Active
+                    <div className="absolute top-1 right-1 bg-primary text-bg-dark px-2 py-0.5 rounded-full text-xs font-mono font-bold animate-pulse">
+                      ★
                     </div>
                   ) : owned ? (
-                    <div className="absolute top-2 right-2 bg-green-500 text-white px-3 py-1 rounded-full text-sm font-bold">
-                      ✓ Owned
+                    <div className="absolute top-1 right-1 bg-success text-bg-dark px-2 py-0.5 rounded-full text-xs font-mono font-bold">
+                      ✓
                     </div>
                   ) : null}
                 </div>
 
                 {/* Details */}
-                <div className="p-4">
-                  <div className="text-xs text-gray-400 uppercase mb-1">
+                <div className="p-3">
+                  <div className="text-xs text-primary/50 uppercase mb-1 font-mono">
                     {item.type}
                   </div>
-                  <h3 className="text-xl font-bold mb-2">{item.name}</h3>
-                  <p className="text-sm text-gray-400 mb-4">
+                  <h3 className="text-base font-display font-bold mb-1 text-primary line-clamp-1">
+                    {item.name}
+                  </h3>
+                  <p className="text-xs text-primary/60 mb-3 font-mono line-clamp-2">
                     {item.description}
                   </p>
 
                   {/* Price & Action */}
-                  <div className="flex items-center justify-between">
-                    <div className="text-2xl font-bold">
+                  <div className="space-y-2">
+                    <div className="text-center">
                       {item.price === 0 ? (
-                        <span className="text-green-400">FREE</span>
+                        <span className="text-success text-sm font-bold font-mono">FREE</span>
                       ) : (
-                        <span>💎 {item.price}</span>
+                        <div className="text-tokens drop-shadow-[0_0_6px_rgba(255,215,0,0.5)] flex items-center justify-center gap-1">
+                          <img
+                            src="/assets/tamagochi-coin.svg"
+                            alt="DIARY"
+                            className="w-4 h-4"
+                            style={{
+                              filter:
+                                'brightness(0) saturate(100%) invert(80%) sepia(48%) saturate(1000%) hue-rotate(2deg) brightness(104%) contrast(101%)',
+                            }}
+                          />
+                          <span className="text-lg font-bold font-mono">{item.price}</span>
+                        </div>
                       )}
                     </div>
 
                     {isActive ? (
                       <button
                         disabled
-                        className="px-6 py-2 bg-blue-600 rounded-lg cursor-not-allowed"
+                        className="w-full px-3 py-1.5 bg-primary/20 border border-primary rounded text-xs cursor-not-allowed font-mono text-primary"
                       >
-                        Active
+                        [ACTIVE]
                       </button>
                     ) : owned ? (
                       <button
                         onClick={() => handleApply(item.id, item.type)}
                         disabled={isApplying}
-                        className="px-6 py-2 bg-green-600 hover:bg-green-700 rounded-lg font-semibold transition-colors"
+                        className="w-full px-3 py-1.5 bg-transparent hover:bg-success/10 border border-success hover:border-success rounded text-xs font-mono font-semibold transition-all text-success hover:shadow-glow-green"
                       >
-                        {isApplying ? 'Applying...' : 'Apply'}
+                        {isApplying ? '[...]' : '[APPLY]'}
                       </button>
                     ) : (
                       <button
                         onClick={() => handlePurchase(item.id, item.price)}
                         disabled={!canAfford || isPurchasing || item.price === 0}
-                        className={`px-6 py-2 rounded-lg font-semibold transition-colors ${
+                        className={`w-full px-3 py-1.5 rounded text-xs font-mono font-semibold transition-all ${
                           canAfford
-                            ? 'bg-blue-600 hover:bg-blue-700'
-                            : 'bg-gray-600 cursor-not-allowed opacity-50'
+                            ? 'bg-transparent hover:bg-primary/10 border border-primary/40 hover:border-primary text-primary hover:shadow-glow-cyan'
+                            : 'bg-transparent border border-inactive text-disabled cursor-not-allowed'
                         }`}
                       >
                         {isPurchasing
-                          ? 'Buying...'
+                          ? '[...]'
                           : item.price === 0
-                          ? 'Default'
-                          : canAfford
-                          ? 'Buy'
-                          : 'Not enough'}
+                            ? '[DEF]'
+                            : canAfford
+                              ? '[BUY]'
+                              : '[NO]'}
                       </button>
                     )}
                   </div>
@@ -325,72 +403,119 @@ export default function Shop() {
         </div>
 
         {filteredItems.length === 0 && (
-          <div className="text-center text-gray-400 py-12 bg-gradient-to-br from-gray-800 via-purple-900/20 to-gray-800 rounded-xl border border-purple-700/50">
+          <div className="text-center py-12 bg-bg-card rounded-xl border border-primary/20 shadow-glow-cyan">
             {activeTab === 'animals' ? (
               // NFT Collectible Pets Coming Soon
               <div className="max-w-2xl mx-auto px-8">
-                <div className="text-7xl mb-6 animate-bounce">🐾</div>
-                <h2 className="text-3xl font-bold text-white mb-4">Collectible Pets</h2>
-                <p className="text-lg text-gray-300 mb-6">
+                <div className="mb-6 flex justify-center animate-bounce">
+                  <img
+                    src="/assets/colletible-tamagochies---it-will-be-diffrenet-coll.svg"
+                    alt="Collectible Pets"
+                    className="w-24 h-24"
+                    style={{
+                      filter:
+                        'brightness(0) saturate(100%) invert(71%) sepia(86%) saturate(2872%) hue-rotate(155deg) brightness(101%) contrast(101%)',
+                    }}
+                  />
+                </div>
+                <h2 className="text-3xl font-display font-bold text-primary mb-4 drop-shadow-[0_0_10px_rgba(0,229,255,0.3)]">
+                  Collectible Pets
+                </h2>
+                <p className="text-lg text-primary/70 mb-6 font-mono">
                   Exclusive NFT collaborations with top collections
                 </p>
 
-                <div className="bg-black/30 rounded-xl p-6 mb-6">
-                  <div className="text-sm text-gray-400 mb-4">What&apos;s Coming:</div>
+                <div className="bg-bg-lcd/50 rounded-xl p-6 mb-6 border border-primary/20">
+                  <div className="text-sm text-primary/60 mb-4 font-mono font-bold">
+                    What&apos;s Coming:
+                  </div>
                   <div className="space-y-3">
-                    <div className="flex items-start gap-3 text-white">
+                    <div className="flex items-start gap-3 text-primary">
                       <span className="text-2xl">🎨</span>
                       <div className="flex-1 text-left">
-                        <div className="font-semibold">Your NFT Collection</div>
-                        <div className="text-xs text-gray-400">Use your owned NFTs as diary companions</div>
+                        <div className="font-display font-semibold">Your NFT Collection</div>
+                        <div className="text-xs text-primary/50 font-mono">
+                          Use your owned NFTs as diary companions
+                        </div>
                       </div>
                     </div>
-                    <div className="flex items-start gap-3 text-white">
+                    <div className="flex items-start gap-3 text-primary">
                       <span className="text-2xl">🏆</span>
                       <div className="flex-1 text-left">
-                        <div className="font-semibold">Blue-Chip Collections</div>
-                        <div className="text-xs text-gray-400">Partnerships with top-tier NFT projects</div>
+                        <div className="font-display font-semibold">Blue-Chip Collections</div>
+                        <div className="text-xs text-primary/50 font-mono">
+                          Partnerships with top-tier NFT projects
+                        </div>
                       </div>
                     </div>
-                    <div className="flex items-start gap-3 text-white">
+                    <div className="flex items-start gap-3 text-primary">
                       <span className="text-2xl">✨</span>
                       <div className="flex-1 text-left">
-                        <div className="font-semibold">Exclusive Variants</div>
-                        <div className="text-xs text-gray-400">Special edition pets for collectors</div>
+                        <div className="font-display font-semibold">Exclusive Variants</div>
+                        <div className="text-xs text-primary/50 font-mono">
+                          Special edition pets for collectors
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                <div className="text-sm text-gray-500 mb-4">
+                <div className="text-sm text-primary/50 mb-4 font-mono">
                   Connect your wallet to bring your NFT collection to life!
                 </div>
 
-                <div className="inline-block bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-3 rounded-lg font-semibold">
-                  🔔 Coming in Q1 2025
+                <div className="inline-block btn-primary px-6 py-3 rounded-lg font-mono font-semibold">
+                  🔔 COMING Q1 2025
                 </div>
               </div>
             ) : activeTab === 'pet' ? (
               // Pet Accessories Coming Soon
               <div className="max-w-xl mx-auto px-8">
-                <div className="text-6xl mb-4">✨</div>
-                <h2 className="text-2xl font-bold text-white mb-3">Pet Accessories</h2>
-                <p className="text-gray-300 mb-4">
+                <div className="mb-4 flex justify-center">
+                  <img
+                    src="/assets/tamagochi-pet-accessorizes.svg"
+                    alt="Pet Accessories"
+                    className="w-20 h-20"
+                    style={{
+                      filter:
+                        'brightness(0) saturate(100%) invert(71%) sepia(86%) saturate(2872%) hue-rotate(155deg) brightness(101%) contrast(101%)',
+                    }}
+                  />
+                </div>
+                <h2 className="text-2xl font-display font-bold text-primary mb-3 drop-shadow-[0_0_10px_rgba(0,229,255,0.3)]">
+                  Pet Accessories
+                </h2>
+                <p className="text-primary/70 mb-4 font-mono">
                   Dress up your pet with exclusive accessories
                 </p>
-                <div className="text-sm text-gray-500">
+                <div className="text-sm text-primary/50 font-mono">
                   Hats, Glasses, Outfits & More
                 </div>
-                <div className="mt-6 inline-block bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold text-sm">
-                  Coming Soon
+                <div className="mt-6 inline-block btn-primary px-6 py-2 rounded-lg font-mono font-semibold text-sm">
+                  [COMING SOON]
                 </div>
               </div>
             ) : (
               // Default Empty State
               <div>
-                <div className="text-6xl mb-4">{tabs.find(t => t.id === activeTab)?.icon}</div>
-                <p className="text-xl font-semibold mb-2">No items in this category yet</p>
-                <p className="text-sm">Check back soon for new {tabs.find(t => t.id === activeTab)?.label.toLowerCase()}!</p>
+                <div className="mb-4 flex justify-center">
+                  <img
+                    src={tabs.find((t) => t.id === activeTab)?.iconPath || ''}
+                    alt="Category"
+                    className="w-20 h-20"
+                    style={{
+                      filter:
+                        'brightness(0) saturate(100%) invert(71%) sepia(86%) saturate(2872%) hue-rotate(155deg) brightness(101%) contrast(101%)',
+                    }}
+                  />
+                </div>
+                <p className="text-xl font-display font-semibold mb-2 text-primary">
+                  No items in this category yet
+                </p>
+                <p className="text-sm text-primary/60 font-mono">
+                  Check back soon for new{' '}
+                  {tabs.find((t) => t.id === activeTab)?.label.toLowerCase()}!
+                </p>
               </div>
             )}
           </div>

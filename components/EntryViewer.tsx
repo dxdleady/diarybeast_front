@@ -57,21 +57,23 @@ export function EntryViewer({ entry, onBack }: EntryViewerProps) {
       <div className="mb-6 flex items-center justify-between">
         <button
           onClick={onBack}
-          className="text-gray-400 hover:text-white transition-colors flex items-center gap-2"
+          className="px-4 py-2 bg-bg-lcd/50 hover:bg-primary/10 border border-primary/20 hover:border-primary/40 rounded text-primary transition-all flex items-center gap-2 font-mono text-sm hover:shadow-glow-cyan"
         >
-          <span>←</span> Back
+          <span>←</span> [BACK]
         </button>
       </div>
 
       <div className="mb-6">
-        <h1 className="text-3xl font-bold mb-2">{formattedDate}</h1>
-        <p className="text-gray-400">{entry.wordCount} words</p>
+        <h1 className="text-3xl font-display font-bold mb-2 text-primary drop-shadow-[0_0_8px_rgba(0,229,255,0.4)]">
+          {formattedDate}
+        </h1>
+        <p className="text-primary/60 font-mono text-sm">{entry.wordCount} words</p>
       </div>
 
       {/* Content */}
-      <div className="bg-gray-800 rounded-xl p-6 min-h-[400px]">
+      <div className="bg-bg-card border border-primary/20 rounded-xl p-6 min-h-[400px] shadow-glow-cyan">
         {error && (
-          <div className="bg-red-600/20 border border-red-600 rounded-lg p-4 text-red-400">
+          <div className="bg-error/20 border border-error rounded-lg p-4 text-error font-mono text-sm">
             {error}
           </div>
         )}
@@ -79,32 +81,32 @@ export function EntryViewer({ entry, onBack }: EntryViewerProps) {
         {!error && decryptedContent && (
           <div
             className={`prose prose-invert max-w-none ${
-              fontFamily === 'sans' ? 'font-sans' :
-              fontFamily === 'serif' ? 'font-serif' :
-              'font-mono'
+              fontFamily === 'sans'
+                ? 'font-sans'
+                : fontFamily === 'serif'
+                  ? 'font-serif'
+                  : 'font-mono'
             }`}
           >
-            <div className="text-gray-200 leading-relaxed text-lg">
+            <div className="text-primary leading-relaxed text-base">
               <ReactMarkdown
                 components={{
                   p: ({ children }) => (
-                    <p className="mb-4 whitespace-pre-wrap">{children}</p>
+                    <p className="mb-4 whitespace-pre-wrap text-primary">{children}</p>
                   ),
                   strong: ({ children }) => (
-                    <strong className="font-bold text-white">{children}</strong>
+                    <strong className="font-bold text-primary drop-shadow-[0_0_2px_rgba(0,229,255,0.3)]">
+                      {children}
+                    </strong>
                   ),
-                  em: ({ children }) => (
-                    <em className="italic">{children}</em>
-                  ),
+                  em: ({ children }) => <em className="italic text-primary/90">{children}</em>,
                   ul: ({ children }) => (
-                    <ul className="list-disc list-inside mb-4">{children}</ul>
+                    <ul className="list-disc list-inside mb-4 text-primary">{children}</ul>
                   ),
                   ol: ({ children }) => (
-                    <ol className="list-decimal list-inside mb-4">{children}</ol>
+                    <ol className="list-decimal list-inside mb-4 text-primary">{children}</ol>
                   ),
-                  li: ({ children }) => (
-                    <li className="mb-1">{children}</li>
-                  ),
+                  li: ({ children }) => <li className="mb-1 text-primary">{children}</li>,
                 }}
               >
                 {decryptedContent}
@@ -114,9 +116,7 @@ export function EntryViewer({ entry, onBack }: EntryViewerProps) {
         )}
 
         {!error && !decryptedContent && (
-          <div className="text-gray-500">
-            No content to display
-          </div>
+          <div className="text-primary/50 font-mono text-sm">No content to display</div>
         )}
       </div>
     </div>

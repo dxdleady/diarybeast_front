@@ -33,9 +33,9 @@ export function LifeLossNotification({
         <div
           className={`max-w-md w-full rounded-lg shadow-lg p-4 ${
             notificationType === 'critical'
-              ? 'bg-red-600/90 border border-red-500'
-              : 'bg-orange-600/90 border border-orange-500'
-          } text-white backdrop-blur-sm`}
+              ? 'bg-error/90 border border-error'
+              : 'bg-warning/90 border border-warning'
+          } text-primary backdrop-blur-sm`}
         >
           <div className="flex items-start gap-3">
             {/* Icon */}
@@ -45,15 +45,15 @@ export function LifeLossNotification({
 
             {/* Content */}
             <div className="flex-1">
-              <h3 className="font-bold text-lg mb-1">
+              <h3 className="font-display font-bold text-lg mb-1 text-primary">
                 {notificationType === 'critical'
                   ? 'Your Pet is in Danger!'
                   : 'Your Pet Missed You!'}
               </h3>
-              <p className="text-sm opacity-90 mb-2">{message}</p>
+              <p className="text-sm text-primary/90 mb-2 font-mono">{message}</p>
 
               {/* Lives indicator */}
-              <div className="flex items-center gap-2 text-xs">
+              <div className="flex items-center gap-2 text-xs font-mono">
                 <span>Lives:</span>
                 <div className="flex gap-0.5">
                   {Array.from({ length: 7 }).map((_, i) => (
@@ -71,7 +71,7 @@ export function LifeLossNotification({
                 toast.dismiss(t.id);
                 onDismiss?.();
               }}
-              className="flex-shrink-0 text-white/60 hover:text-white transition-colors"
+              className="flex-shrink-0 text-primary/60 hover:text-primary transition-colors"
             >
               ✕
             </button>

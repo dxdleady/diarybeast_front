@@ -63,38 +63,60 @@ export function WeeklySummaryModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80">
-      <div className="bg-gray-800 rounded-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto border border-gray-700">
+      <div className="bg-bg-card rounded-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto border border-primary/20 shadow-glow-cyan">
         {/* Header */}
-        <div className="sticky top-0 bg-gray-800 border-b border-gray-700 p-6 flex items-center justify-between">
+        <div className="sticky top-0 bg-bg-card border-b border-primary/20 p-6 flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+            <h2 className="text-2xl font-display font-bold text-primary flex items-center gap-2 drop-shadow-[0_0_6px_rgba(0,229,255,0.3)]">
               📊 Weekly Analysis
             </h2>
-            <p className="text-gray-400 text-sm mt-1">{weekLabel}</p>
+            <p className="text-primary/60 text-sm mt-1 font-mono">{weekLabel}</p>
           </div>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-white transition-colors text-2xl"
+            className="text-primary/60 hover:text-primary transition-colors text-2xl"
           >
             ×
           </button>
         </div>
 
         {/* Content */}
-        <div className="p-6 space-y-6">
+        <div className="p-6 space-y-6 font-mono">
           {/* Cost Info */}
           {newBalance !== undefined && (
-            <div className="bg-purple-900/30 border border-purple-700 rounded-lg p-4 text-center">
-              <div className="text-sm text-gray-400">Analysis Cost: 💎 500 DIARY</div>
-              <div className="text-lg font-semibold text-white mt-1">
-                New Balance: 💎 {newBalance} DIARY
+            <div className="bg-accent/20 border border-accent rounded-lg p-4 text-center">
+              <div className="text-sm text-primary/70 flex items-center justify-center gap-2">
+                <span>Analysis Cost:</span>
+                <img
+                  src="/assets/tamagochi-coin.svg"
+                  alt="DIARY"
+                  className="w-4 h-4 inline"
+                  style={{
+                    filter:
+                      'brightness(0) saturate(100%) invert(80%) sepia(48%) saturate(1000%) hue-rotate(2deg) brightness(104%) contrast(101%)',
+                  }}
+                />
+                <span>50 DIARY</span>
+              </div>
+              <div className="text-lg font-semibold text-primary mt-1 flex items-center justify-center gap-2">
+                <span>New Balance:</span>
+                <img
+                  src="/assets/tamagochi-coin.svg"
+                  alt="DIARY"
+                  className="w-5 h-5 inline"
+                  style={{
+                    filter:
+                      'brightness(0) saturate(100%) invert(80%) sepia(48%) saturate(1000%) hue-rotate(2deg) brightness(104%) contrast(101%)',
+                  }}
+                />
+                <span>{newBalance} DIARY</span>
               </div>
             </div>
           )}
 
           {/* Emotion Wheel */}
           <section>
-            <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+            <h3 className="text-xl font-display font-bold text-primary mb-4 flex items-center gap-2 drop-shadow-[0_0_4px_rgba(0,229,255,0.3)]">
               🎭 Plutchik&apos;s Emotions
             </h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -103,19 +125,17 @@ export function WeeklySummaryModal({
                 return (
                   <div
                     key={emotion}
-                    className="bg-gray-700 rounded-lg p-3 text-center"
+                    className="bg-bg-lcd/50 border border-primary/20 rounded-lg p-3 text-center"
                   >
                     <div className="text-3xl mb-2">{config.emoji}</div>
-                    <div className="text-sm font-medium text-white mb-2">
-                      {config.label}
-                    </div>
-                    <div className="w-full bg-gray-600 rounded-full h-2 mb-1">
+                    <div className="text-sm font-medium text-primary mb-2">{config.label}</div>
+                    <div className="w-full bg-bg-lcd/80 border border-primary/10 rounded-full h-2 mb-1">
                       <div
                         className={`h-2 rounded-full ${config.color} transition-all duration-300`}
                         style={{ width: `${intensity}%` }}
                       />
                     </div>
-                    <div className="text-xs text-gray-400">{intensity}%</div>
+                    <div className="text-xs text-primary/60">{intensity}%</div>
                   </div>
                 );
               })}
@@ -124,27 +144,27 @@ export function WeeklySummaryModal({
 
           {/* Summary */}
           <section>
-            <h3 className="text-xl font-bold text-white mb-3 flex items-center gap-2">
+            <h3 className="text-xl font-display font-bold text-primary mb-3 flex items-center gap-2 drop-shadow-[0_0_4px_rgba(0,229,255,0.3)]">
               📝 Summary
             </h3>
-            <div className="bg-gray-700 rounded-lg p-4">
-              <p className="text-gray-300 leading-relaxed">{summary}</p>
+            <div className="bg-bg-lcd/50 border border-primary/20 rounded-lg p-4">
+              <p className="text-primary/90 leading-relaxed">{summary}</p>
             </div>
           </section>
 
           {/* Key Insights */}
           <section>
-            <h3 className="text-xl font-bold text-white mb-3 flex items-center gap-2">
+            <h3 className="text-xl font-display font-bold text-primary mb-3 flex items-center gap-2 drop-shadow-[0_0_4px_rgba(0,229,255,0.3)]">
               💡 Key Insights
             </h3>
             <div className="space-y-3">
               {insights.map((insight, index) => (
                 <div
                   key={index}
-                  className="bg-gray-700 rounded-lg p-4 flex items-start gap-3"
+                  className="bg-bg-lcd/50 border border-primary/20 rounded-lg p-4 flex items-start gap-3"
                 >
-                  <span className="text-blue-400 font-bold">#{index + 1}</span>
-                  <p className="text-gray-300 flex-1">{insight}</p>
+                  <span className="text-primary font-bold">#{index + 1}</span>
+                  <p className="text-primary/90 flex-1">{insight}</p>
                 </div>
               ))}
             </div>
@@ -152,25 +172,23 @@ export function WeeklySummaryModal({
 
           {/* Emotional Trend */}
           <section>
-            <h3 className="text-xl font-bold text-white mb-3 flex items-center gap-2">
+            <h3 className="text-xl font-display font-bold text-primary mb-3 flex items-center gap-2 drop-shadow-[0_0_4px_rgba(0,229,255,0.3)]">
               📊 Emotional Trend
             </h3>
-            <div className="bg-gray-700 rounded-lg p-4 text-center">
+            <div className="bg-bg-lcd/50 border border-primary/20 rounded-lg p-4 text-center">
               <div className="text-4xl mb-2">{trendInfo.emoji}</div>
-              <div className={`text-2xl font-bold ${trendInfo.color}`}>
-                {trendInfo.label}
-              </div>
+              <div className={`text-2xl font-bold ${trendInfo.color}`}>{trendInfo.label}</div>
             </div>
           </section>
         </div>
 
         {/* Footer */}
-        <div className="sticky bottom-0 bg-gray-800 border-t border-gray-700 p-4">
+        <div className="sticky bottom-0 bg-bg-card border-t border-primary/20 p-4">
           <button
             onClick={onClose}
-            className="w-full px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors"
+            className="w-full px-6 py-3 btn-primary rounded-lg font-semibold transition-colors"
           >
-            Close
+            [CLOSE]
           </button>
         </div>
       </div>

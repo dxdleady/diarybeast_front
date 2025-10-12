@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getEncryptionKey, decryptContent } from '@/lib/encryption';
+import { burnTokens } from '@/lib/blockchain';
 
-const SUMMARY_COST = 500;
+const SUMMARY_COST = 50;
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
 
 interface PlutchikEmotions {
@@ -28,10 +29,7 @@ export async function POST(req: NextRequest) {
     const { userAddress, weekStart, weekEnd } = await req.json();
 
     if (!userAddress || !weekStart || !weekEnd) {
-      return NextResponse.json(
-        { error: 'Missing required fields' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
     // Get user
@@ -62,10 +60,7 @@ export async function POST(req: NextRequest) {
     });
 
     if (existingSummary) {
-      return NextResponse.json(
-        { error: 'Summary already exists for this week' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Summary already exists for this week' }, { status: 400 });
     }
 
     // Get entries for the week
@@ -81,10 +76,7 @@ export async function POST(req: NextRequest) {
     });
 
     if (entries.length === 0) {
-      return NextResponse.json(
-        { error: 'No entries found for this week' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'No entries found for this week' }, { status: 400 });
     }
 
     // Decrypt entries
@@ -97,6 +89,16 @@ export async function POST(req: NextRequest) {
 
     // Analyze with AI
     const analysis = await analyzeWeek(decryptedEntries);
+
+    // Burn tokens on blockchain
+    let txHash: string;
+    try {
+      txHash = await burnTokens(userAddress, SUMMARY_COST);
+      console.log('Tokens burned on blockchain:', { txHash, amount: SUMMARY_COST });
+    } catch (error) {
+      console.error('Token burn failed:', error);
+      return NextResponse.json({ error: 'Failed to burn tokens on blockchain' }, { status: 500 });
+    }
 
     // Deduct cost and create summary in a transaction
     const [summary, updatedUser] = await prisma.$transaction([
@@ -117,6 +119,12 @@ export async function POST(req: NextRequest) {
       }),
     ]);
 
+    console.log('Summary created and tokens deducted:', {
+      txHash,
+      newBalance: updatedUser.coinsBalance,
+      deducted: SUMMARY_COST,
+    });
+
     return NextResponse.json({
       success: true,
       summary: {
@@ -127,6 +135,7 @@ export async function POST(req: NextRequest) {
         trend: summary.trend,
       },
       newBalance: updatedUser.coinsBalance,
+      txHash, // Include blockchain transaction hash
     });
   } catch (error) {
     console.error('Summary generation error:', error);
