@@ -8,6 +8,7 @@ import { coinbaseWallet } from 'wagmi/connectors';
 import { ReactNode } from 'react';
 import { EncryptionKeyProvider } from '@/lib/EncryptionKeyContext';
 import { LifeCheckWrapper } from '@/components/LifeCheckWrapper';
+import { MusicProvider } from '@/lib/contexts/MusicContext';
 
 const config = createConfig({
   chains: [baseSepolia],
@@ -34,7 +35,9 @@ export function Providers({ children }: { children: ReactNode }) {
           chain={baseSepolia}
         >
           <EncryptionKeyProvider>
-            <LifeCheckWrapper>{children}</LifeCheckWrapper>
+            <MusicProvider>
+              <LifeCheckWrapper>{children}</LifeCheckWrapper>
+            </MusicProvider>
           </EncryptionKeyProvider>
         </OnchainKitProvider>
       </QueryClientProvider>

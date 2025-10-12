@@ -1,10 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import {
-  calculateLifeLoss,
-  shouldCheckLifeLoss,
-  MAX_LIVES,
-} from '@/lib/gamification/lifeSystem';
+import { calculateLifeLoss, shouldCheckLifeLoss, MAX_LIVES } from '@/lib/gamification/lifeSystem';
 
 /**
  * POST /api/life/check
@@ -27,10 +23,7 @@ export async function POST(req: NextRequest) {
     const { userAddress } = await req.json();
 
     if (!userAddress) {
-      return NextResponse.json(
-        { error: 'Missing userAddress' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Missing userAddress' }, { status: 400 });
     }
 
     // Get user from database
@@ -101,9 +94,11 @@ export async function POST(req: NextRequest) {
       hoursInactive: result.hoursInactive,
     });
   } catch (error) {
-    console.error('Life check error');
+    const errorMessage =
+      error instanceof Error ? error.message : error ? String(error) : 'Unknown error';
+    console.error('Life check error:', errorMessage);
     return NextResponse.json(
-      { error: 'Failed to check lives', details: error instanceof Error ? error.message : 'Unknown error' },
+      { error: 'Failed to check lives', details: errorMessage },
       { status: 500 }
     );
   }
@@ -120,10 +115,7 @@ export async function GET(req: NextRequest) {
     const userAddress = req.nextUrl.searchParams.get('userAddress');
 
     if (!userAddress) {
-      return NextResponse.json(
-        { error: 'Missing userAddress' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Missing userAddress' }, { status: 400 });
     }
 
     const user = await prisma.user.findUnique({
@@ -142,9 +134,11 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json(user);
   } catch (error) {
-    console.error('Get life status error');
+    const errorMessage =
+      error instanceof Error ? error.message : error ? String(error) : 'Unknown error';
+    console.error('Get life status error:', errorMessage);
     return NextResponse.json(
-      { error: 'Failed to get life status', details: error instanceof Error ? error.message : 'Unknown error' },
+      { error: 'Failed to get life status', details: errorMessage },
       { status: 500 }
     );
   }

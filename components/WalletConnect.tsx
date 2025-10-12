@@ -26,8 +26,9 @@ export function WalletConnect() {
   }
 
   return (
-    <ConnectWallet className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-8 rounded-lg transition-colors">
-      <span>Connect Wallet</span>
-    </ConnectWallet>
+    <ConnectWallet
+      text="Play & Grow"
+      className="btn-primary font-semibold py-3 px-8 rounded-lg transition-colors font-mono"
+    />
   );
 }

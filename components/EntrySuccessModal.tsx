@@ -98,72 +98,79 @@ export function EntrySuccessModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
       {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-        onClick={onClose}
-      />
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
 
       {/* Modal */}
-      <div className="relative bg-gradient-to-br from-gray-900 via-green-900/20 to-gray-900 rounded-2xl shadow-2xl max-w-md w-full border border-green-600/50 animate-in zoom-in duration-300">
+      <div className="relative bg-bg-card border-2 border-success rounded-2xl shadow-2xl max-w-md w-full animate-in zoom-in duration-300 shadow-glow-green">
         {/* Header */}
         <div className="p-8 text-center">
           {/* Success Icon */}
           <div className="text-8xl mb-4 animate-bounce">🎉</div>
 
           {/* Title */}
-          <h2 className="text-3xl font-bold text-white mb-2">Entry Saved!</h2>
+          <h2 className="text-3xl font-display font-bold text-primary mb-2 drop-shadow-[0_0_8px_rgba(57,255,20,0.4)]">
+            Entry Saved!
+          </h2>
         </div>
 
         {/* Content */}
         <div className="px-8 pb-6 space-y-4">
           {/* Tokens Earned */}
-          <div className="bg-blue-600/20 border border-blue-600/50 rounded-lg p-4">
+          <div className="bg-primary/20 border border-primary/50 rounded-lg p-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className="text-3xl">💎</span>
-                <span className="text-white font-semibold">DIARY Tokens</span>
+                <img
+                  src="/assets/tamagochi-coin.svg"
+                  alt="DIARY Token"
+                  className="w-8 h-8"
+                  style={{
+                    filter:
+                      'brightness(0) saturate(100%) invert(80%) sepia(48%) saturate(1000%) hue-rotate(2deg) brightness(104%) contrast(101%)',
+                  }}
+                />
+                <span className="text-primary font-semibold font-mono">DIARY Tokens</span>
               </div>
-              <span className="text-2xl font-bold text-blue-400">
-                +{tokensEarned}
-              </span>
+              <span className="text-2xl font-bold text-tokens font-mono">+{tokensEarned}</span>
             </div>
           </div>
 
           {/* Streak Bonus */}
           {streakBonus > 0 && milestone && (
-            <div className="bg-orange-600/20 border border-orange-600/50 rounded-lg p-4">
+            <div className="bg-streak/20 border border-streak/50 rounded-lg p-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <span className="text-3xl">🔥</span>
+                  <img
+                    src="/assets/tamagochi-achievements-daily-crypto.svg"
+                    alt="Streak"
+                    className="w-8 h-8"
+                    style={{
+                      filter:
+                        'brightness(0) saturate(100%) invert(69%) sepia(52%) saturate(2288%) hue-rotate(359deg) brightness(101%) contrast(101%)',
+                    }}
+                  />
                   <div>
-                    <div className="text-white font-semibold">{milestone} Bonus!</div>
-                    <div className="text-xs text-gray-400">Keep the streak going!</div>
+                    <div className="text-primary font-semibold font-mono">{milestone} Bonus!</div>
+                    <div className="text-xs text-primary/60 font-mono">Keep the streak going!</div>
                   </div>
                 </div>
-                <span className="text-2xl font-bold text-orange-400">
-                  +{streakBonus}
-                </span>
+                <span className="text-2xl font-bold text-streak font-mono">+{streakBonus}</span>
               </div>
             </div>
           )}
 
           {/* Lives Restored */}
           {livesRestored > 0 && (
-            <div className="bg-green-600/20 border border-green-600/50 rounded-lg p-4">
+            <div className="bg-success/20 border border-success/50 rounded-lg p-4">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
                   <span className="text-3xl">❤️</span>
-                  <span className="text-white font-semibold">
-                    Lives Restored
-                  </span>
+                  <span className="text-primary font-semibold font-mono">Lives Restored</span>
                 </div>
-                <span className="text-2xl font-bold text-green-400">
-                  +{livesRestored}
-                </span>
+                <span className="text-2xl font-bold text-success font-mono">+{livesRestored}</span>
               </div>
 
               {/* Before/After Lives */}
-              <div className="flex items-center justify-center gap-4 text-sm text-gray-300">
+              <div className="flex items-center justify-center gap-4 text-sm text-primary/80 font-mono">
                 {/* Before */}
                 <div className="flex items-center gap-1">
                   {Array.from({ length: 7 }).map((_, i) => (
@@ -173,7 +180,7 @@ export function EntrySuccessModal({
                   ))}
                 </div>
 
-                <span className="text-gray-400">→</span>
+                <span className="text-primary/60">→</span>
 
                 {/* After */}
                 <div className="flex items-center gap-1">
@@ -188,25 +195,25 @@ export function EntrySuccessModal({
           )}
 
           {/* Pet Happy Message */}
-          <div className="text-center text-gray-300">
+          <div className="text-center text-primary/80 font-mono">
             <p className="text-lg">Your pet is happier! 😺</p>
           </div>
         </div>
 
         {/* Footer */}
-        <div className="p-6 bg-gray-800/30 rounded-b-2xl">
+        <div className="p-6 bg-bg-lcd/30 rounded-b-2xl">
           <button
             onClick={onClose}
-            className="w-full px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition-colors"
+            className="w-full px-6 py-3 btn-primary font-semibold rounded-lg transition-colors font-mono shadow-glow-green"
           >
-            Continue
+            [CONTINUE]
           </button>
         </div>
 
         {/* Close button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"
+          className="absolute top-4 right-4 text-primary/60 hover:text-primary transition-colors"
         >
           <span className="text-2xl">✕</span>
         </button>

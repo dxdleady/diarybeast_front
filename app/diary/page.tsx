@@ -11,6 +11,7 @@ import { useEncryptionKey } from '@/lib/EncryptionKeyContext';
 import { EntrySuccessModal } from '@/components/EntrySuccessModal';
 import { DailyTimer } from '@/components/DailyTimer';
 import { WeeklySummaryModal } from '@/components/WeeklySummaryModal';
+import { GamificationModal } from '@/components/GamificationModal';
 
 export default function Diary() {
   const { address } = useAccount();
@@ -27,6 +28,7 @@ export default function Diary() {
   const [successData, setSuccessData] = useState<any>(null);
   const [showSummaryModal, setShowSummaryModal] = useState(false);
   const [summaryData, setSummaryData] = useState<any>(null);
+  const [showGamificationModal, setShowGamificationModal] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -37,13 +39,14 @@ export default function Diary() {
 
     try {
       const [userRes, entriesRes] = await Promise.all([
-        fetch(`/api/user/${address}`),
-        fetch(`/api/entries?userAddress=${address}`),
+        fetch(`/api/user/${address}?t=${Date.now()}`, { cache: 'no-store' }),
+        fetch(`/api/entries?userAddress=${address}&t=${Date.now()}`, { cache: 'no-store' }),
       ]);
 
       const userData = await userRes.json();
       const entriesData = await entriesRes.json();
 
+      console.log('User data loaded:', { coinsBalance: userData.coinsBalance });
       setUserData(userData);
       setEntries(entriesData.entries || []);
     } catch (error) {
@@ -53,11 +56,16 @@ export default function Diary() {
     }
   }
 
-  function handleSummaryGenerated(summary: any) {
+  async function handleSummaryGenerated(summary: any) {
+    console.log('handleSummaryGenerated called:', {
+      summary,
+      currentBalance: userData?.coinsBalance,
+    });
     setSummaryData(summary);
     setShowSummaryModal(true);
     // Reload user data to update balance
-    loadData();
+    await loadData();
+    console.log('Data reloaded, new balance should be:', summary.newBalance);
   }
 
   async function handleSave() {
@@ -122,25 +130,28 @@ export default function Diary() {
 
   if (loading) {
     return (
-      <div className="h-screen bg-gray-900 text-white flex items-center justify-center">
-        <div>Loading...</div>
+      <div className="h-screen bg-bg-dark text-primary flex items-center justify-center">
+        <div className="text-center">
+          <div className="font-mono text-lg mb-4 animate-pulse">Loading...</div>
+          <div className="text-primary/40 font-mono text-sm">Initializing DiaryBeast</div>
+        </div>
       </div>
     );
   }
 
   // Background colors based on activeBackground
   const getBackgroundClass = () => {
-    if (!userData?.activeBackground) return 'bg-gray-900';
+    if (!userData?.activeBackground) return 'bg-bg-dark';
 
     const bgMap: Record<string, string> = {
-      'bg-default': 'bg-gray-900',
-      'bg-sunset': 'bg-gradient-to-br from-orange-900 via-purple-900 to-gray-900',
-      'bg-ocean': 'bg-gradient-to-br from-blue-900 via-cyan-900 to-gray-900',
-      'bg-forest': 'bg-gradient-to-br from-green-900 via-emerald-900 to-gray-900',
-      'bg-space': 'bg-gradient-to-br from-indigo-900 via-purple-900 to-black',
+      'bg-default': 'bg-bg-dark',
+      'bg-sunset': 'bg-gradient-to-br from-orange-900 via-purple-900 to-[var(--bg-dark)]',
+      'bg-ocean': 'bg-gradient-to-br from-secondary via-primary/20 to-[var(--bg-dark)]',
+      'bg-forest': 'bg-gradient-to-br from-green-900 via-accent/20 to-[var(--bg-dark)]',
+      'bg-space': 'bg-gradient-to-br from-secondary via-purple-900 to-black',
     };
 
-    return bgMap[userData.activeBackground] || 'bg-gray-900';
+    return bgMap[userData.activeBackground] || 'bg-bg-dark';
   };
 
   // Check if user has written today
@@ -158,26 +169,26 @@ export default function Diary() {
             onEntryClick={setSelectedEntry}
             onSummaryGenerated={handleSummaryGenerated}
             userBalance={userData?.coinsBalance || 0}
+            onOpenGamification={() => setShowGamificationModal(true)}
           />
         </div>
 
         {/* Main Content Area */}
         <div className="flex-1 overflow-y-auto relative">
-          {/* Daily Timer - Fixed in corner */}
-          <div className="fixed top-4 right-[21rem] z-40">
+          {/* Daily Timer - Fixed in top right of content area */}
+          <div className="absolute top-4 right-4 z-40">
             <DailyTimer hasWrittenToday={hasWrittenToday} />
           </div>
 
           {selectedEntry ? (
-            <EntryViewer
-              entry={selectedEntry}
-              onBack={() => setSelectedEntry(null)}
-            />
+            <EntryViewer entry={selectedEntry} onBack={() => setSelectedEntry(null)} />
           ) : (
             <div className="max-w-3xl mx-auto p-8">
               <div className="mb-6">
-                <h1 className="text-3xl font-bold mb-2">Today&apos;s Entry</h1>
-                <p className="text-gray-400">
+                <h1 className="text-4xl font-display font-bold mb-2 text-primary drop-shadow-[0_0_10px_rgba(0,229,255,0.3)]">
+                  Today&apos;s Entry
+                </h1>
+                <p className="text-primary/60 font-mono text-sm">
                   {new Date().toLocaleDateString('en-US', {
                     weekday: 'long',
                     year: 'numeric',
@@ -194,15 +205,15 @@ export default function Diary() {
               />
 
               <div className="mt-4 flex justify-between items-center">
-                <div className="text-sm text-gray-400">
-                  {content.split(/\s+/).filter(Boolean).length} words
+                <div className="text-sm text-primary/50 font-mono">
+                  [{content.split(/\s+/).filter(Boolean).length} words]
                 </div>
                 <button
                   onClick={handleSave}
                   disabled={!content.trim() || saving}
-                  className="px-8 py-3 bg-blue-600 rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-700 transition-colors"
+                  className="btn-primary px-8 py-3 rounded-lg font-mono font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {saving ? 'Saving...' : 'Save & Sign Entry'}
+                  {saving ? '[SAVING...]' : '[SAVE & SIGN]'}
                 </button>
               </div>
             </div>
@@ -242,6 +253,12 @@ export default function Diary() {
           newBalance={summaryData.newBalance}
         />
       )}
+
+      {/* Gamification Modal */}
+      <GamificationModal
+        isOpen={showGamificationModal}
+        onClose={() => setShowGamificationModal(false)}
+      />
     </>
   );
 }

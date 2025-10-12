@@ -17,9 +17,9 @@ interface WeeklySummary {
 }
 
 const TREND_CONFIG = {
-  improving: { emoji: '📈', label: 'Improving', color: 'text-green-400' },
-  stable: { emoji: '➡️', label: 'Stable', color: 'text-blue-400' },
-  declining: { emoji: '📉', label: 'Needs Attention', color: 'text-orange-400' },
+  improving: { emoji: '📈', label: 'Improving', color: 'text-success' },
+  stable: { emoji: '➡️', label: 'Stable', color: 'text-primary' },
+  declining: { emoji: '📉', label: 'Needs Attention', color: 'text-warning' },
 };
 
 export default function InsightsPage() {
@@ -80,91 +80,123 @@ export default function InsightsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center">
-        <div>Loading insights...</div>
+      <div className="min-h-screen bg-bg-dark text-primary flex items-center justify-center">
+        <div className="text-center">
+          <div className="font-mono text-lg mb-4 animate-pulse">Loading...</div>
+          <div className="text-primary/40 font-mono text-sm">Loading Insights</div>
+        </div>
       </div>
     );
   }
 
   return (
     <>
-      <div className="min-h-screen bg-gray-900 text-white p-8">
+      <div className="min-h-screen bg-bg-dark text-white p-8">
         <div className="max-w-6xl mx-auto">
           {/* Header */}
           <div className="mb-8">
             <button
               onClick={() => router.push('/diary')}
-              className="text-blue-400 hover:text-blue-300 mb-4"
+              className="text-primary/60 hover:text-primary transition-all mb-4 font-mono text-sm hover:drop-shadow-[0_0_4px_rgba(0,229,255,0.4)]"
             >
               ← Back to Diary
             </button>
-            <h1 className="text-4xl font-bold mb-2">📊 Your Insights</h1>
-            <p className="text-gray-400">
-              All your weekly emotional analyses
-            </p>
+            <h1 className="text-4xl font-display font-bold mb-2 text-primary drop-shadow-[0_0_10px_rgba(0,229,255,0.3)] flex items-center gap-3">
+              <img
+                src="/assets/tamagochi-total-score.svg"
+                alt="Insights"
+                className="w-10 h-10"
+                style={{
+                  filter:
+                    'brightness(0) saturate(100%) invert(71%) sepia(86%) saturate(2872%) hue-rotate(155deg) brightness(101%) contrast(101%)',
+                }}
+              />
+              Your Insights
+            </h1>
+            <p className="text-primary/60 font-mono">All your weekly emotional analyses</p>
           </div>
 
           {/* Summaries List */}
           {summaries.length === 0 ? (
-            <div className="text-center py-12 bg-gray-800 rounded-xl border border-gray-700">
-              <div className="text-6xl mb-4">📊</div>
-              <h2 className="text-2xl font-bold mb-2">No Insights Yet</h2>
-              <p className="text-gray-400 mb-4">
+            <div className="text-center py-12 bg-bg-card rounded-xl border border-primary/20 shadow-glow-cyan">
+              <div className="mb-4 flex justify-center">
+                <img
+                  src="/assets/tamagochi-total-score.svg"
+                  alt="Insights"
+                  className="w-20 h-20"
+                  style={{
+                    filter:
+                      'brightness(0) saturate(100%) invert(71%) sepia(86%) saturate(2872%) hue-rotate(155deg) brightness(101%) contrast(101%)',
+                  }}
+                />
+              </div>
+              <h2 className="text-2xl font-display font-bold mb-2 text-primary">No Insights Yet</h2>
+              <p className="text-primary/60 font-mono mb-4">
                 Generate your first weekly analysis to see insights here
               </p>
               <button
                 onClick={() => router.push('/diary')}
-                className="px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg font-semibold transition-colors"
+                className="btn-primary px-6 py-3 rounded-lg font-mono font-semibold transition-all"
               >
-                Go to Diary
+                [GO TO DIARY]
               </button>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {summaries.map((summary) => {
                 const trendInfo = TREND_CONFIG[summary.trend];
-                const topEmotion = Object.entries(summary.emotions)
-                  .sort(([, a], [, b]) => (b as number) - (a as number))[0];
+                const topEmotion = Object.entries(summary.emotions).sort(
+                  ([, a], [, b]) => (b as number) - (a as number)
+                )[0];
 
                 return (
                   <div
                     key={summary.id}
                     onClick={() => setSelectedSummary(summary)}
-                    className="bg-gray-800 border border-gray-700 rounded-xl p-6 cursor-pointer hover:border-blue-500 transition-all hover:scale-105"
+                    className="bg-bg-card border border-primary/20 rounded-xl p-6 cursor-pointer hover:border-primary/60 transition-all hover:scale-105 shadow-glow-cyan"
                   >
                     {/* Date */}
                     <div className="flex items-center justify-between mb-4">
-                      <div className="text-sm text-gray-400">
+                      <div className="text-sm text-primary/60 font-mono">
                         {getWeekLabel(summary.weekStart, summary.weekEnd)}
                       </div>
-                      <div className={`text-xl ${trendInfo.color}`}>
-                        {trendInfo.emoji}
-                      </div>
+                      <div className={`text-xl ${trendInfo.color}`}>{trendInfo.emoji}</div>
                     </div>
 
                     {/* Summary Preview */}
-                    <p className="text-sm text-gray-300 mb-4 line-clamp-3">
+                    <p className="text-sm text-primary/70 mb-4 line-clamp-3 font-mono leading-relaxed">
                       {summary.summary}
                     </p>
 
                     {/* Top Emotion */}
-                    <div className="flex items-center gap-2 mb-3">
-                      <span className="text-xs text-gray-500">Top Emotion:</span>
-                      <span className="text-sm font-semibold capitalize">
+                    <div className="flex items-center gap-2 mb-3 bg-bg-lcd/30 p-2 rounded border border-primary/10">
+                      <span className="text-xs text-primary/50 font-mono">Top Emotion:</span>
+                      <span className="text-sm font-bold capitalize text-primary font-mono">
                         {topEmotion[0]} ({Number(topEmotion[1])}%)
                       </span>
                     </div>
 
                     {/* Insights Count */}
-                    <div className="flex items-center gap-2 text-xs text-gray-500">
-                      <span>💡 {summary.insights.length} insights</span>
+                    <div className="flex items-center gap-2 text-xs text-primary/40 font-mono">
+                      <div className="flex items-center gap-1">
+                        <img
+                          src="/assets/tamagochi-info-about-gamification.svg"
+                          alt="Insights"
+                          className="w-3 h-3"
+                          style={{
+                            filter:
+                              'brightness(0) saturate(100%) invert(71%) sepia(86%) saturate(2872%) hue-rotate(155deg) brightness(101%) contrast(101%) opacity(0.4)',
+                          }}
+                        />
+                        <span>{summary.insights.length} insights</span>
+                      </div>
                       <span>•</span>
                       <span>{formatDate(summary.createdAt)}</span>
                     </div>
 
                     {/* View Button */}
-                    <button className="mt-4 w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm font-semibold transition-colors">
-                      View Details
+                    <button className="mt-4 w-full px-4 py-2 bg-transparent hover:bg-primary/10 border border-primary/40 hover:border-primary rounded-lg text-sm font-mono font-semibold transition-all text-primary hover:shadow-glow-cyan">
+                      [VIEW DETAILS]
                     </button>
                   </div>
                 );

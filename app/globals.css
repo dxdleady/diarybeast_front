@@ -2,15 +2,198 @@
 @tailwind components;
 @tailwind utilities;
 
+/* DiaryBeast Design System - LCD Tamagotchi meets Base */
 :root {
-  --background: #111827;
-  --foreground: #f9fafb;
+  /* Primary Colors - LCD Cyan */
+  --color-primary: #00E5FF;
+  --color-primary-dark: #00B8D4;
+  --color-primary-light: #6EFFFE;
+
+  /* Secondary - Base Blue */
+  --color-secondary: #0052FF;
+  --color-secondary-dark: #0041CC;
+  --color-secondary-light: #3375FF;
+
+  /* Accent - Pixel Green */
+  --color-accent: #39FF14;
+  --color-accent-dark: #2DD60F;
+  --color-accent-light: #66FF47;
+
+  /* Backgrounds */
+  --bg-dark: #0A0E1A;
+  --bg-card: #151B2B;
+  --bg-lcd: #1a2332;
+  --bg-lcd-gradient-start: #1a2332;
+  --bg-lcd-gradient-end: #0f1419;
+
+  /* UI States */
+  --color-active: #00E5FF;
+  --color-inactive: #2D3B54;
+  --color-disabled: #5A6B8C;
+  --color-hover: #A0D8E0;
+
+  /* Status Colors */
+  --color-warning: #FF6B00;
+  --color-error: #FF1744;
+  --color-success: #39FF14;
+  --color-streak: #FFD700;
+  --color-tokens: #FFD700;
+
+  /* Text Colors */
+  --text-primary: #FFFFFF;
+  --text-secondary: #A0D8E0;
+  --text-muted: #5A6B8C;
+  --text-accent: #00E5FF;
+
+  /* Borders */
+  --border-default: #2D3B54;
+  --border-active: #00E5FF;
+  --border-focus: #0052FF;
+
+  /* Shadows & Glows */
+  --glow-cyan: 0 0 20px rgba(0, 229, 255, 0.3);
+  --glow-cyan-strong: 0 0 30px rgba(0, 229, 255, 0.5);
+  --glow-green: 0 0 20px rgba(57, 255, 20, 0.3);
+  --glow-blue: 0 0 20px rgba(0, 82, 255, 0.3);
+
+  /* Legacy (for compatibility) */
+  --background: #0A0E1A;
+  --foreground: #FFFFFF;
 }
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+@layer base {
+  body {
+    @apply bg-[var(--bg-dark)] text-[var(--text-primary)];
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  }
+}
+
+@layer components {
+  /* LCD Screen Effect */
+  .lcd-screen {
+    background: linear-gradient(135deg, var(--bg-lcd-gradient-start), var(--bg-lcd-gradient-end));
+    border: 1px solid rgba(0, 229, 255, 0.3);
+    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5), var(--glow-cyan);
+  }
+
+  /* Glow Effects */
+  .glow-cyan {
+    box-shadow: var(--glow-cyan);
+  }
+
+  .glow-cyan-strong {
+    box-shadow: var(--glow-cyan-strong);
+  }
+
+  .glow-green {
+    box-shadow: var(--glow-green);
+  }
+
+  /* Button Primary */
+  .btn-primary {
+    background: transparent;
+    color: var(--color-primary);
+    border: 1px solid var(--color-primary);
+    box-shadow: none;
+    transition: all 0.3s ease;
+  }
+
+  .btn-primary:hover:not(:disabled) {
+    background: rgba(0, 229, 255, 0.1);
+    box-shadow: var(--glow-cyan);
+    transform: translateY(-1px);
+  }
+
+  .btn-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  /* Button Secondary */
+  .btn-secondary {
+    background: transparent;
+    color: var(--color-primary);
+    border: 1px solid var(--color-primary);
+    transition: all 0.3s ease;
+  }
+
+  .btn-secondary:hover:not(:disabled) {
+    background: rgba(0, 229, 255, 0.1);
+    box-shadow: var(--glow-cyan);
+  }
+
+  /* Card */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-default);
+    border-radius: 0.75rem;
+    transition: all 0.3s ease;
+  }
+
+  .card:hover {
+    border-color: var(--border-active);
+    box-shadow: var(--glow-cyan);
+  }
+
+  /* ASCII Text */
+  .ascii-text {
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+    color: var(--color-primary);
+    text-shadow: 0 0 8px rgba(0, 229, 255, 0.5);
+  }
+}
+
+@layer utilities {
+  /* Animations */
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes pulse-glow {
+    0%, 100% {
+      box-shadow: 0 0 20px rgba(0, 229, 255, 0.3);
+    }
+    50% {
+      box-shadow: 0 0 30px rgba(0, 229, 255, 0.6);
+    }
+  }
+
+  @keyframes progressGrow {
+    0% {
+      width: 0%;
+      opacity: 0.8;
+    }
+    100% {
+      width: 100%;
+      opacity: 1;
+    }
+  }
+
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  .animate-fade-in {
+    animation: fade-in 0.5s ease-out;
+  }
+
+  .animate-pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
 }

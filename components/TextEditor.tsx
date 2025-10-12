@@ -36,17 +36,15 @@ export function TextEditor({ value, onChange, placeholder }: TextEditorProps) {
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
     const selectedText = value.substring(start, end);
-    const newText = value.substring(0, start) + before + selectedText + after + value.substring(end);
+    const newText =
+      value.substring(0, start) + before + selectedText + after + value.substring(end);
 
     onChange(newText);
 
     // Restore cursor position
     setTimeout(() => {
       textarea.focus();
-      textarea.setSelectionRange(
-        start + before.length,
-        end + before.length
-      );
+      textarea.setSelectionRange(start + before.length, end + before.length);
     }, 0);
   };
 
@@ -69,7 +67,7 @@ export function TextEditor({ value, onChange, placeholder }: TextEditorProps) {
         await transcribeAudio(audioBlob);
 
         // Stop all tracks to release microphone
-        stream.getTracks().forEach(track => track.stop());
+        stream.getTracks().forEach((track) => track.stop());
       };
 
       mediaRecorder.start();
@@ -130,64 +128,66 @@ export function TextEditor({ value, onChange, placeholder }: TextEditorProps) {
   };
 
   return (
-    <div className="bg-gray-800 rounded-xl p-6">
+    <div className="bg-bg-card border border-primary/20 rounded-xl p-6 shadow-glow-cyan">
       {/* Toolbar */}
-      <div className="flex items-center justify-between mb-4 pb-4 border-b border-gray-700">
+      <div className="flex items-center justify-between mb-4 pb-4 border-b border-primary/20">
         {/* Formatting buttons */}
         <div className="flex gap-2">
           <button
             type="button"
             onClick={() => insertFormatting('**', '**')}
-            className="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 rounded text-sm font-bold transition-colors"
+            className="px-3 py-1.5 bg-bg-lcd/50 hover:bg-primary/10 border border-primary/20 hover:border-primary/40 rounded text-sm font-bold transition-all text-primary font-mono"
             title="Bold (Ctrl+B)"
           >
-            B
+            [B]
           </button>
           <button
             type="button"
             onClick={() => insertFormatting('*', '*')}
-            className="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 rounded text-sm italic transition-colors"
+            className="px-3 py-1.5 bg-bg-lcd/50 hover:bg-primary/10 border border-primary/20 hover:border-primary/40 rounded text-sm italic transition-all text-primary font-mono"
             title="Italic (Ctrl+I)"
           >
-            I
+            [I]
           </button>
           <button
             type="button"
             onClick={() => insertFormatting('- ', '')}
-            className="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 rounded text-sm transition-colors"
+            className="px-3 py-1.5 bg-bg-lcd/50 hover:bg-primary/10 border border-primary/20 hover:border-primary/40 rounded text-sm transition-all text-primary font-mono"
             title="List"
           >
-            ≡
+            [≡]
           </button>
 
           {/* Divider */}
-          <div className="w-px bg-gray-600 mx-1"></div>
+          <div className="w-px bg-primary/20 mx-1"></div>
 
           {/* Audio recording button */}
           <button
             type="button"
             onClick={isRecording ? stopRecording : startRecording}
             disabled={isTranscribing}
-            className={`px-3 py-1.5 rounded text-sm transition-all ${
+            className={`px-3 py-1.5 rounded text-sm transition-all font-mono ${
               isRecording
-                ? 'bg-red-600 hover:bg-red-700 animate-pulse'
+                ? 'bg-error/20 hover:bg-error/30 border border-error text-error animate-pulse'
                 : isTranscribing
-                ? 'bg-gray-600 cursor-not-allowed'
-                : 'bg-gray-700 hover:bg-gray-600'
+                  ? 'bg-bg-lcd/50 border border-inactive text-disabled cursor-not-allowed'
+                  : 'bg-bg-lcd/50 hover:bg-primary/10 border border-primary/20 hover:border-primary/40 text-primary'
             }`}
-            title={isRecording ? 'Stop recording' : isTranscribing ? 'Transcribing...' : 'Voice input'}
+            title={
+              isRecording ? 'Stop recording' : isTranscribing ? 'Transcribing...' : 'Voice input'
+            }
           >
-            {isTranscribing ? '⏳' : isRecording ? '⏹️' : '🎤'}
+            {isTranscribing ? '[⏳]' : isRecording ? '[⏹️]' : '[🎤]'}
           </button>
 
           {/* Recording indicator */}
           {isRecording && (
-            <span className="text-xs text-red-400 flex items-center gap-1 animate-pulse">
+            <span className="text-xs text-error flex items-center gap-1 animate-pulse font-mono">
               Recording...
             </span>
           )}
           {isTranscribing && (
-            <span className="text-xs text-blue-400 flex items-center gap-1">
+            <span className="text-xs text-primary flex items-center gap-1 font-mono">
               Transcribing...
             </span>
           )}
@@ -195,19 +195,19 @@ export function TextEditor({ value, onChange, placeholder }: TextEditorProps) {
 
         {/* Font selector */}
         <div className="flex gap-2 items-center">
-          <span className="text-sm text-gray-400">Font:</span>
+          <span className="text-sm text-primary/60 font-mono">Font:</span>
           {Object.entries(fontNames).map(([key, name]) => (
             <button
               key={key}
               type="button"
               onClick={() => handleFontChange(key)}
-              className={`px-3 py-1.5 rounded text-sm transition-colors ${
+              className={`px-3 py-1.5 rounded text-sm transition-all font-mono ${
                 fontFamily === key
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-700 hover:bg-gray-600'
+                  ? 'bg-primary/20 text-primary border border-primary/40 shadow-glow-cyan'
+                  : 'bg-bg-lcd/50 hover:bg-primary/10 border border-primary/20 hover:border-primary/40 text-primary/70'
               }`}
             >
-              {name}
+              [{name}]
             </button>
           ))}
         </div>
@@ -219,12 +219,12 @@ export function TextEditor({ value, onChange, placeholder }: TextEditorProps) {
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className={`w-full h-96 p-4 bg-gray-900 rounded-lg text-white placeholder-gray-500 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 ${fonts[fontFamily as keyof typeof fonts]}`}
+        className={`w-full h-96 p-4 lcd-screen rounded-lg text-primary placeholder-primary/40 resize-none focus:outline-none focus:ring-2 focus:ring-primary transition-all ${fonts[fontFamily as keyof typeof fonts]}`}
       />
 
       {/* Hint */}
-      <div className="mt-2 text-xs text-gray-500">
-        Tip: Use **bold**, *italic*, or - lists | Click 🎤 for voice input
+      <div className="mt-2 text-xs text-primary/50 font-mono">
+        [TIP: Use **bold**, *italic*, or - lists | Click 🎤 for voice input]
       </div>
     </div>
   );

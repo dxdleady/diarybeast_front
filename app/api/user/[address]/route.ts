@@ -2,10 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { syncUserBalance } from '@/lib/blockchain';
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params: Promise<{ address: string }> }
-) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ address: string }> }) {
   try {
     const { address } = await params;
 
@@ -49,11 +46,18 @@ export async function GET(
       activeBackground: user.activeBackground,
       activeAccessory: user.activeAccessory,
       totalEntries: user._count.entries,
+      // Tamagotchi fields
+      happiness: user.happiness,
+      petState: user.petState,
+      lastFeedTime: user.lastFeedTime?.toISOString(),
+      lastPlayTime: user.lastPlayTime?.toISOString(),
     });
   } catch (error) {
-    console.error('Get user error');
+    const errorMessage =
+      error instanceof Error ? error.message : error ? String(error) : 'Unknown error';
+    console.error('Get user error:', errorMessage);
     return NextResponse.json(
-      { error: 'Failed to fetch user', details: error instanceof Error ? error.message : 'Unknown error' },
+      { error: 'Failed to fetch user', details: errorMessage },
       { status: 500 }
     );
   }
@@ -120,9 +124,11 @@ export async function PATCH(
       },
     });
   } catch (error) {
-    console.error('Update user error');
+    const errorMessage =
+      error instanceof Error ? error.message : error ? String(error) : 'Unknown error';
+    console.error('Update user error:', errorMessage);
     return NextResponse.json(
-      { error: 'Failed to update user', details: error instanceof Error ? error.message : 'Unknown error' },
+      { error: 'Failed to update user', details: errorMessage },
       { status: 500 }
     );
   }

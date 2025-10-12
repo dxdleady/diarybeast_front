@@ -7,14 +7,10 @@ import { calculateStreakBonus } from '@/lib/gamification/streakRewards';
 
 export async function POST(req: NextRequest) {
   try {
-    const { userAddress, encryptedContent, signature, contentHash, wordCount } =
-      await req.json();
+    const { userAddress, encryptedContent, signature, contentHash, wordCount } = await req.json();
 
     if (!userAddress || !encryptedContent || !signature || !contentHash) {
-      return NextResponse.json(
-        { error: 'Missing required fields' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
     // Verify signature (with Smart Wallet fallback)
@@ -26,10 +22,7 @@ export async function POST(req: NextRequest) {
       });
 
       if (!isValid) {
-        return NextResponse.json(
-          { error: 'Invalid signature' },
-          { status: 400 }
-        );
+        return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
       }
     } catch (sigError) {
       console.warn('Signature verification failed (Smart Wallet):', sigError);
@@ -62,10 +55,7 @@ export async function POST(req: NextRequest) {
     });
 
     if (existingEntry) {
-      return NextResponse.json(
-        { error: 'Entry already exists for today' },
-        { status: 409 }
-      );
+      return NextResponse.json({ error: 'Entry already exists for today' }, { status: 409 });
     }
 
     // Create entry
@@ -103,9 +93,7 @@ export async function POST(req: NextRequest) {
         userId: user.id,
         type: isFirstEntry ? 'first_entry' : 'daily_entry',
         amount: rewardAmount,
-        description: isFirstEntry
-          ? 'First entry bonus!'
-          : 'Daily entry reward',
+        description: isFirstEntry ? 'First entry bonus!' : 'Daily entry reward',
         txHash,
       },
     });
@@ -186,9 +174,11 @@ export async function POST(req: NextRequest) {
       oldLives: user.livesRemaining, // Include old lives for before/after display
     });
   } catch (error) {
-    console.error('Entry creation error');
+    const errorMessage =
+      error instanceof Error ? error.message : error ? String(error) : 'Unknown error';
+    console.error('Entry creation error:', errorMessage);
     return NextResponse.json(
-      { error: 'Failed to create entry', details: error instanceof Error ? error.message : 'Unknown error' },
+      { error: 'Failed to create entry', details: errorMessage },
       { status: 500 }
     );
   }
@@ -199,10 +189,7 @@ export async function GET(req: NextRequest) {
     const userAddress = req.nextUrl.searchParams.get('userAddress');
 
     if (!userAddress) {
-      return NextResponse.json(
-        { error: 'Missing userAddress' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Missing userAddress' }, { status: 400 });
     }
 
     const user = await prisma.user.findUnique({
@@ -224,9 +211,11 @@ export async function GET(req: NextRequest) {
       total: user.entries.length,
     });
   } catch (error) {
-    console.error('Get entries error');
+    const errorMessage =
+      error instanceof Error ? error.message : error ? String(error) : 'Unknown error';
+    console.error('Get entries error:', errorMessage);
     return NextResponse.json(
-      { error: 'Failed to fetch entries', details: error instanceof Error ? error.message : 'Unknown error' },
+      { error: 'Failed to fetch entries', details: errorMessage },
       { status: 500 }
     );
   }

@@ -26,6 +26,12 @@ model User {
   aiAnalysisEnabled   Boolean   @default(false)
   activeBackground    String?
   activeAccessory     String?
+
+  // Tamagotchi features
+  happiness           Int       @default(100)
+  petState            String    @default("idle")
+  lastFeedTime        DateTime?
+  lastPlayTime        DateTime?
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
 
