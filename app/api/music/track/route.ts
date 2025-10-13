@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 
 // Mubert API v3 configuration
 const MUBERT_API_BASE = 'https://music-api.mubert.com/api/v3';
-const MUBERT_COMPANY_ID = process.env.MUBERT_COMPANY_ID;
-const MUBERT_LICENSE_TOKEN = process.env.MUBERT_LICENSE_TOKEN;
+const MUBERT_COMPANY_ID = process.env.MUBERT_COMPANY_ID!;
+const MUBERT_LICENSE_TOKEN = process.env.MUBERT_LICENSE_TOKEN!;
 
 // Genre mappings to Mubert playlist indices
 // Wildcards work in the final streaming URL: 3.0 = all Ambient, 3 = all Calm
