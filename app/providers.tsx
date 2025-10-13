@@ -9,6 +9,10 @@ import { ReactNode } from 'react';
 import { EncryptionKeyProvider } from '@/lib/EncryptionKeyContext';
 import { LifeCheckWrapper } from '@/components/LifeCheckWrapper';
 import { MusicProvider } from '@/lib/contexts/MusicContext';
+import { GlobalMusicProvider } from '@/components/GlobalMusicPlayer';
+import { PawPlayer } from '@/components/GlobalMusicPlayer/PawPlayer';
+import { GamificationProvider } from '@/lib/contexts/GamificationContext';
+import { BottomNavOverlay } from '@/components/BottomNavOverlay';
 
 const config = createConfig({
   chains: [baseSepolia],
@@ -36,7 +40,13 @@ export function Providers({ children }: { children: ReactNode }) {
         >
           <EncryptionKeyProvider>
             <MusicProvider>
-              <LifeCheckWrapper>{children}</LifeCheckWrapper>
+              <GlobalMusicProvider>
+                <GamificationProvider>
+                  <LifeCheckWrapper>{children}</LifeCheckWrapper>
+                  <PawPlayer />
+                  <BottomNavOverlay />
+                </GamificationProvider>
+              </GlobalMusicProvider>
             </MusicProvider>
           </EncryptionKeyProvider>
         </OnchainKitProvider>

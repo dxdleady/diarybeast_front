@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useAccount } from 'wagmi';
 import { useRouter } from 'next/navigation';
+import { BottomNavOverlay } from '@/components/BottomNavOverlay';
 
 interface ShopItem {
   id: string;
@@ -217,12 +218,6 @@ export default function Shop() {
               />
               {balance}
             </div>
-            <button
-              onClick={() => router.push('/diary')}
-              className="mt-2 text-sm text-primary/60 hover:text-primary font-mono hover:drop-shadow-[0_0_4px_rgba(0,229,255,0.4)] transition-all"
-            >
-              ← Back to Diary
-            </button>
           </div>
         </div>
 

@@ -12,11 +12,13 @@ import { EntrySuccessModal } from '@/components/EntrySuccessModal';
 import { DailyTimer } from '@/components/DailyTimer';
 import { WeeklySummaryModal } from '@/components/WeeklySummaryModal';
 import { GamificationModal } from '@/components/GamificationModal';
+import { useGamification } from '@/lib/contexts/GamificationContext';
 
 export default function Diary() {
   const { address } = useAccount();
   const { signMessageAsync } = useSignMessage();
   const { encryptionKey } = useEncryptionKey();
+  const { showGamificationModal, closeGamificationModal } = useGamification();
   const [userData, setUserData] = useState<any>(null);
   const [entries, setEntries] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -28,7 +30,6 @@ export default function Diary() {
   const [successData, setSuccessData] = useState<any>(null);
   const [showSummaryModal, setShowSummaryModal] = useState(false);
   const [summaryData, setSummaryData] = useState<any>(null);
-  const [showGamificationModal, setShowGamificationModal] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -163,18 +164,17 @@ export default function Diary() {
     <>
       <div className={`h-screen text-white flex overflow-hidden ${getBackgroundClass()}`}>
         {/* Left Sidebar - Weekly History */}
-        <div className="w-64 flex-shrink-0 overflow-hidden">
+        <div className="w-80 flex-shrink-0 overflow-hidden">
           <WeeklyHistory
             entries={entries}
             onEntryClick={setSelectedEntry}
             onSummaryGenerated={handleSummaryGenerated}
             userBalance={userData?.coinsBalance || 0}
-            onOpenGamification={() => setShowGamificationModal(true)}
           />
         </div>
 
         {/* Main Content Area */}
-        <div className="flex-1 overflow-y-auto relative">
+        <div className="flex-1 overflow-hidden relative">
           {/* Daily Timer - Fixed in top right of content area */}
           <div className="absolute top-4 right-4 z-40">
             <DailyTimer hasWrittenToday={hasWrittenToday} />
@@ -183,38 +183,37 @@ export default function Diary() {
           {selectedEntry ? (
             <EntryViewer entry={selectedEntry} onBack={() => setSelectedEntry(null)} />
           ) : (
-            <div className="max-w-3xl mx-auto p-8">
-              <div className="mb-6">
-                <h1 className="text-4xl font-display font-bold mb-2 text-primary drop-shadow-[0_0_10px_rgba(0,229,255,0.3)]">
-                  Today&apos;s Entry
-                </h1>
-                <p className="text-primary/60 font-mono text-sm">
-                  {new Date().toLocaleDateString('en-US', {
-                    weekday: 'long',
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                  })}
-                </p>
-              </div>
-
-              <TextEditor
-                value={content}
-                onChange={setContent}
-                placeholder="How was your day? Write your thoughts here..."
-              />
-
-              <div className="mt-4 flex justify-between items-center">
-                <div className="text-sm text-primary/50 font-mono">
-                  [{content.split(/\s+/).filter(Boolean).length} words]
+            <div className="h-full pt-4">
+              <div className="w-full px-8">
+                <div className="mb-6 text-center">
+                  <h1 className="text-4xl font-display font-bold mb-2 text-primary drop-shadow-[0_0_10px_rgba(0,229,255,0.3)]">
+                    Today&apos;s Entry
+                  </h1>
+                  <p className="text-primary/60 font-mono text-sm">
+                    {new Date().toLocaleDateString('en-US', {
+                      weekday: 'long',
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                    })}
+                  </p>
                 </div>
-                <button
-                  onClick={handleSave}
-                  disabled={!content.trim() || saving}
-                  className="btn-primary px-8 py-3 rounded-lg font-mono font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {saving ? '[SAVING...]' : '[SAVE & SIGN]'}
-                </button>
+
+                <TextEditor
+                  value={content}
+                  onChange={setContent}
+                  placeholder="How was your day? Write your thoughts here..."
+                  wordCount={content.split(/\s+/).filter(Boolean).length}
+                  actionButton={
+                    <button
+                      onClick={handleSave}
+                      disabled={!content.trim() || saving}
+                      className="btn-primary px-6 py-2 rounded-lg font-mono text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {saving ? '[SAVING...]' : '[SAVE & SIGN]'}
+                    </button>
+                  }
+                />
               </div>
             </div>
           )}
@@ -255,10 +254,7 @@ export default function Diary() {
       )}
 
       {/* Gamification Modal */}
-      <GamificationModal
-        isOpen={showGamificationModal}
-        onClose={() => setShowGamificationModal(false)}
-      />
+      <GamificationModal isOpen={showGamificationModal} onClose={closeGamificationModal} />
     </>
   );
 }

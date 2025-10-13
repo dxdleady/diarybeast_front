@@ -6,9 +6,17 @@ interface TextEditorProps {
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
+  actionButton?: React.ReactNode;
+  wordCount?: number;
 }
 
-export function TextEditor({ value, onChange, placeholder }: TextEditorProps) {
+export function TextEditor({
+  value,
+  onChange,
+  placeholder,
+  actionButton,
+  wordCount,
+}: TextEditorProps) {
   const [fontFamily, setFontFamily] = useState('sans');
   const [isRecording, setIsRecording] = useState(false);
   const [isTranscribing, setIsTranscribing] = useState(false);
@@ -128,9 +136,9 @@ export function TextEditor({ value, onChange, placeholder }: TextEditorProps) {
   };
 
   return (
-    <div className="bg-bg-card border border-primary/20 rounded-xl p-6 shadow-glow-cyan">
+    <div className="bg-bg-card/80 backdrop-blur-md border border-primary/10 rounded-xl p-6 shadow-lg hover:border-primary/20 transition-all duration-300">
       {/* Toolbar */}
-      <div className="flex items-center justify-between mb-4 pb-4 border-b border-primary/20">
+      <div className="flex items-center justify-between mb-4 pb-4 border-b border-primary/10">
         {/* Formatting buttons */}
         <div className="flex gap-2">
           <button
@@ -219,12 +227,20 @@ export function TextEditor({ value, onChange, placeholder }: TextEditorProps) {
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className={`w-full h-96 p-4 lcd-screen rounded-lg text-primary placeholder-primary/40 resize-none focus:outline-none focus:ring-2 focus:ring-primary transition-all ${fonts[fontFamily as keyof typeof fonts]}`}
+        className={`w-full h-64 p-4 lcd-screen rounded-lg text-primary placeholder-primary/40 resize-none focus:outline-none focus:ring-2 focus:ring-primary/50 focus:shadow-[0_0_20px_rgba(0,229,255,0.3)] transition-all ${fonts[fontFamily as keyof typeof fonts]}`}
       />
 
-      {/* Hint */}
-      <div className="mt-2 text-xs text-primary/50 font-mono">
-        [TIP: Use **bold**, *italic*, or - lists | Click 🎤 for voice input]
+      {/* Hint and Action Row */}
+      <div className="mt-4 space-y-2">
+        <div className="text-xs text-primary/50 font-mono">
+          [TIP: Use **bold**, *italic*, or - lists | Click 🎤 for voice input]
+        </div>
+        <div className="flex justify-between items-center">
+          {wordCount !== undefined && (
+            <div className="text-xs text-primary/50 font-mono">[{wordCount} words]</div>
+          )}
+          {actionButton && <div>{actionButton}</div>}
+        </div>
       </div>
     </div>
   );

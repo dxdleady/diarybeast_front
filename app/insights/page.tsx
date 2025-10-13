@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useAccount } from 'wagmi';
 import { useRouter } from 'next/navigation';
 import { WeeklySummaryModal } from '@/components/WeeklySummaryModal';
+import { BottomNavOverlay } from '@/components/BottomNavOverlay';
 
 interface WeeklySummary {
   id: string;
@@ -95,12 +96,6 @@ export default function InsightsPage() {
         <div className="max-w-6xl mx-auto">
           {/* Header */}
           <div className="mb-8">
-            <button
-              onClick={() => router.push('/diary')}
-              className="text-primary/60 hover:text-primary transition-all mb-4 font-mono text-sm hover:drop-shadow-[0_0_4px_rgba(0,229,255,0.4)]"
-            >
-              ← Back to Diary
-            </button>
             <h1 className="text-4xl font-display font-bold mb-2 text-primary drop-shadow-[0_0_10px_rgba(0,229,255,0.3)] flex items-center gap-3">
               <img
                 src="/assets/tamagochi-total-score.svg"
