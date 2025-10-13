@@ -114,6 +114,7 @@ export function WeeklyHistory({
     new Set(weekGroups.find((w) => w.isCurrentWeek)?.weekLabel ? [weekGroups[0].weekLabel] : [])
   );
   const [generatingWeek, setGeneratingWeek] = useState<string | null>(null);
+  const [isHistoryCollapsed, setIsHistoryCollapsed] = useState(false);
 
   const toggleWeek = (weekLabel: string) => {
     setExpandedWeeks((prev) => {
@@ -176,9 +177,23 @@ export function WeeklyHistory({
   if (weekGroups.length === 0) {
     return (
       <div className="h-full bg-bg-dark border-r border-primary/20 p-4">
-        <h2 className="text-lg font-display font-semibold mb-4 text-primary drop-shadow-[0_0_6px_rgba(0,229,255,0.3)]">
-          History
-        </h2>
+        {/* Logo */}
+        <div className="mb-6 flex items-center gap-3">
+          <img
+            src="/assets/diary-beast-tamagochi.svg"
+            alt="DiaryBeast"
+            className="w-10 h-10 object-contain"
+            style={{
+              filter:
+                'brightness(0) saturate(100%) invert(70%) sepia(98%) saturate(2476%) hue-rotate(160deg) brightness(103%) contrast(101%)',
+            }}
+          />
+          <h1 className="text-xl font-display font-bold text-primary drop-shadow-[0_0_8px_rgba(0,229,255,0.3)]">
+            DiaryBeast
+          </h1>
+        </div>
+
+        <h2 className="text-lg font-mono font-semibold mb-4 text-white">History</h2>
         <p className="text-sm text-primary/50 font-mono">No entries yet</p>
       </div>
     );
@@ -186,146 +201,147 @@ export function WeeklyHistory({
 
   return (
     <div className="h-full bg-bg-dark border-r border-primary/20 flex flex-col">
-      <div className="p-4 border-b border-primary/20">
-        <h2 className="text-lg font-display font-semibold text-primary drop-shadow-[0_0_6px_rgba(0,229,255,0.3)]">
-          History
-        </h2>
+      {/* Logo */}
+      <div className="p-4 pb-3 flex items-center gap-3">
+        <img
+          src="/assets/diary-beast-tamagochi.svg"
+          alt="DiaryBeast"
+          className="w-10 h-10 object-contain"
+          style={{
+            filter:
+              'brightness(0) saturate(100%) invert(70%) sepia(98%) saturate(2476%) hue-rotate(160deg) brightness(103%) contrast(101%)',
+          }}
+        />
+        <h1 className="text-xl font-display font-bold text-primary drop-shadow-[0_0_8px_rgba(0,229,255,0.3)]">
+          DiaryBeast
+        </h1>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-2">
-        {weekGroups.map((week) => {
-          const isExpanded = expandedWeeks.has(week.weekLabel);
+      <div className="px-4 pb-3 pt-6 border-b border-primary/20 flex items-center justify-between">
+        <h2 className="text-lg font-mono font-semibold text-white">History</h2>
+        <button
+          onClick={() => setIsHistoryCollapsed(!isHistoryCollapsed)}
+          className="text-primary hover:text-primary/80 transition-all"
+        >
+          <span className="text-xl">{isHistoryCollapsed ? '▶' : '▼'}</span>
+        </button>
+      </div>
 
-          return (
-            <div key={week.weekLabel} className="mb-2">
-              <div>
-                <button
-                  onClick={() => toggleWeek(week.weekLabel)}
-                  className="w-full flex items-center justify-between p-3 rounded-lg hover:bg-primary/10 border border-transparent hover:border-primary/20 transition-all text-left"
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-primary font-mono">
-                      {isExpanded ? '▼' : '▶'}
-                    </span>
-                    <span className="font-display font-medium text-sm text-primary">
-                      {week.weekLabel}
-                    </span>
-                    {week.isCurrentWeek && (
-                      <span className="text-xs bg-primary/20 text-primary border border-primary/40 px-2 py-0.5 rounded-full font-mono">
-                        CURRENT
+      {!isHistoryCollapsed && (
+        <div className="flex-1 overflow-y-auto p-2">
+          {weekGroups.map((week) => {
+            const isExpanded = expandedWeeks.has(week.weekLabel);
+
+            return (
+              <div key={week.weekLabel} className="mb-2">
+                <div>
+                  <button
+                    onClick={() => toggleWeek(week.weekLabel)}
+                    className="w-full flex items-center justify-between p-3 rounded-lg hover:bg-primary/10 border border-transparent hover:border-primary/20 transition-all text-left"
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-primary font-mono">
+                        {isExpanded ? '▼' : '▶'}
                       </span>
-                    )}
-                  </div>
-                </button>
-
-                {/* Generate Summary Button */}
-                {week.entries.length > 0 && (
-                  <div className="px-3 pb-2">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleGenerateSummary(week);
-                      }}
-                      disabled={generatingWeek === week.weekLabel || userBalance < 50}
-                      className="w-full btn-primary px-3 py-2 rounded-lg text-xs font-mono font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1"
-                    >
-                      {generatingWeek === week.weekLabel ? (
-                        '[ANALYZING...]'
-                      ) : (
-                        <>
-                          <span>[SUMMARY -</span>
-                          <img
-                            src="/assets/tamagochi-coin.svg"
-                            alt="DIARY"
-                            className="w-3 h-3"
-                            style={{
-                              filter:
-                                'brightness(0) saturate(100%) invert(80%) sepia(48%) saturate(1000%) hue-rotate(2deg) brightness(104%) contrast(101%)',
-                            }}
-                          />
-                          <span>50]</span>
-                        </>
+                      <span className="font-display font-medium text-sm text-primary">
+                        {week.weekLabel}
+                      </span>
+                      {week.isCurrentWeek && (
+                        <span className="text-xs bg-primary/20 text-primary border border-primary/40 px-2 py-0.5 rounded-full font-mono">
+                          CURRENT
+                        </span>
                       )}
-                    </button>
+                    </div>
+                  </button>
+
+                  {/* Generate Summary Button */}
+                  {week.entries.length > 0 && (
+                    <div className="px-3 pb-2">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleGenerateSummary(week);
+                        }}
+                        disabled={generatingWeek === week.weekLabel || userBalance < 50}
+                        className="w-full btn-primary px-3 py-2 rounded-lg text-xs font-mono font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1"
+                      >
+                        {generatingWeek === week.weekLabel ? (
+                          '[ANALYZING...]'
+                        ) : (
+                          <>
+                            <span>[SUMMARY -</span>
+                            <img
+                              src="/assets/tamagochi-coin.svg"
+                              alt="DIARY"
+                              className="w-3 h-3"
+                              style={{
+                                filter:
+                                  'brightness(0) saturate(100%) invert(80%) sepia(48%) saturate(1000%) hue-rotate(2deg) brightness(104%) contrast(101%)',
+                              }}
+                            />
+                            <span>50]</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {isExpanded && (
+                  <div className="ml-6 mt-2 space-y-2">
+                    {/* Week Grid View */}
+                    <div className="grid grid-cols-7 gap-1 mb-2">
+                      {Array.from({ length: 7 }).map((_, dayIndex) => {
+                        const currentDay = new Date(week.startDate);
+                        currentDay.setDate(currentDay.getDate() + dayIndex);
+
+                        const hasEntry = week.entries.some((entry) => {
+                          const entryDate = new Date(entry.date);
+                          return entryDate.toDateString() === currentDay.toDateString();
+                        });
+
+                        const dayLabel = ['M', 'T', 'W', 'T', 'F', 'S', 'S'][dayIndex];
+                        const isFuture = currentDay > new Date();
+
+                        return (
+                          <div
+                            key={dayIndex}
+                            className={`aspect-square flex flex-col items-center justify-center rounded text-xs font-mono border ${
+                              hasEntry
+                                ? 'bg-success/20 text-success border-success/40 font-semibold drop-shadow-[0_0_4px_rgba(57,255,20,0.4)]'
+                                : isFuture
+                                  ? 'bg-bg-lcd/30 text-primary/30 border-primary/10'
+                                  : 'bg-bg-lcd/30 text-primary/50 border-primary/20'
+                            }`}
+                            title={currentDay.toLocaleDateString()}
+                          >
+                            <div>{dayLabel}</div>
+                            <div className="text-xs">{hasEntry ? '✓' : currentDay.getDate()}</div>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* Entry List */}
+                    {week.entries.map((entry) => (
+                      <div
+                        key={entry.id}
+                        onClick={() => onEntryClick(entry)}
+                        className="p-2 rounded-lg hover:bg-primary/10 border border-transparent hover:border-primary/20 cursor-pointer transition-all"
+                      >
+                        <div className="text-xs text-primary font-mono">
+                          {formatEntryDate(entry.date)}
+                        </div>
+                        <div className="text-xs text-primary/50 mt-0.5 font-mono">
+                          {entry.wordCount} words
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>
-
-              {isExpanded && (
-                <div className="ml-6 mt-2 space-y-2">
-                  {/* Week Grid View */}
-                  <div className="grid grid-cols-7 gap-1 mb-2">
-                    {Array.from({ length: 7 }).map((_, dayIndex) => {
-                      const currentDay = new Date(week.startDate);
-                      currentDay.setDate(currentDay.getDate() + dayIndex);
-
-                      const hasEntry = week.entries.some((entry) => {
-                        const entryDate = new Date(entry.date);
-                        return entryDate.toDateString() === currentDay.toDateString();
-                      });
-
-                      const dayLabel = ['M', 'T', 'W', 'T', 'F', 'S', 'S'][dayIndex];
-                      const isFuture = currentDay > new Date();
-
-                      return (
-                        <div
-                          key={dayIndex}
-                          className={`aspect-square flex flex-col items-center justify-center rounded text-xs font-mono border ${
-                            hasEntry
-                              ? 'bg-success/20 text-success border-success/40 font-semibold drop-shadow-[0_0_4px_rgba(57,255,20,0.4)]'
-                              : isFuture
-                                ? 'bg-bg-lcd/30 text-primary/30 border-primary/10'
-                                : 'bg-bg-lcd/30 text-primary/50 border-primary/20'
-                          }`}
-                          title={currentDay.toLocaleDateString()}
-                        >
-                          <div>{dayLabel}</div>
-                          <div className="text-xs">{hasEntry ? '✓' : currentDay.getDate()}</div>
-                        </div>
-                      );
-                    })}
-                  </div>
-
-                  {/* Entry List */}
-                  {week.entries.map((entry) => (
-                    <div
-                      key={entry.id}
-                      onClick={() => onEntryClick(entry)}
-                      className="p-2 rounded-lg hover:bg-primary/10 border border-transparent hover:border-primary/20 cursor-pointer transition-all"
-                    >
-                      <div className="text-xs text-primary font-mono">
-                        {formatEntryDate(entry.date)}
-                      </div>
-                      <div className="text-xs text-primary/50 mt-0.5 font-mono">
-                        {entry.wordCount} words
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Footer with Gamification Button */}
-      {onOpenGamification && (
-        <div className="border-t border-primary/20 p-4">
-          <button
-            onClick={onOpenGamification}
-            className="w-full py-4 bg-transparent hover:bg-primary/10 text-primary rounded-lg font-mono font-medium transition-all flex flex-col items-center justify-center gap-2 hover:drop-shadow-[0_0_8px_rgba(0,229,255,0.5)]"
-          >
-            <img
-              src="/assets/tamagochi-info-about-gamification.svg"
-              alt="Gamification"
-              className="w-16 h-16"
-              style={{
-                filter:
-                  'brightness(0) saturate(100%) invert(71%) sepia(86%) saturate(2872%) hue-rotate(155deg) brightness(101%) contrast(101%)',
-              }}
-            />
-            <span className="text-xs">GAMIFICATION</span>
-          </button>
+            );
+          })}
         </div>
       )}
     </div>

@@ -1,8 +1,5 @@
 'use client';
 
-import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
-import { useDisconnect } from 'wagmi';
 import { useState } from 'react';
 import { Pet } from './Pet';
 import { formatLastActive } from '@/lib/gamification/lifeSystem';
@@ -36,37 +33,12 @@ interface RightSidebarProps {
 }
 
 export function RightSidebar({ userData, entries = [] }: RightSidebarProps) {
-  const pathname = usePathname();
-  const router = useRouter();
-  const { disconnect } = useDisconnect();
   const [showAchievements, setShowAchievements] = useState(false);
-
-  const handleLogout = () => {
-    disconnect();
-    router.push('/');
-  };
 
   // Check if user has written today
   const hasWrittenToday = userData?.lastEntryDate
     ? new Date(userData.lastEntryDate).toDateString() === new Date().toDateString()
     : false;
-
-  const menuItems = [
-    { href: '/diary', label: 'Diary', iconPath: '/assets/diary-beast-tamagochi.svg' },
-    {
-      href: '/insights',
-      label: 'Insights',
-      iconPath: '/assets/get-hidden-insights-about-your-thoughts--tamagochi.svg',
-    },
-    { href: '/shop', label: 'Shop', iconPath: '/assets/tamagochi-shop.svg' },
-    { href: '/profile', label: 'Profile', iconPath: '/assets/pet-profile-tamagochi.svg' },
-    {
-      href: '/leaderboard',
-      label: 'Leaderboard',
-      iconPath: '/assets/tamagochi-leaderboard.svg',
-      comingSoon: true,
-    },
-  ];
 
   return (
     <>
@@ -216,86 +188,6 @@ export function RightSidebar({ userData, entries = [] }: RightSidebarProps) {
               />
             </>
           )}
-        </div>
-
-        {/* Navigation Menu */}
-        <div className="p-3 flex-1">
-          <h3 className="text-xs uppercase tracking-wider text-primary/80 font-display font-semibold mb-3 px-2">
-            Navigation
-          </h3>
-          <nav className="space-y-1">
-            {menuItems.map((item) => {
-              const isActive = pathname === item.href;
-              const isComingSoon = 'comingSoon' in item && item.comingSoon;
-
-              if (isComingSoon) {
-                return (
-                  <div
-                    key={item.href}
-                    className="flex items-center gap-3 px-4 py-3 rounded-lg font-mono text-primary/40 border border-transparent cursor-not-allowed opacity-60"
-                  >
-                    <img
-                      src={item.iconPath}
-                      alt={item.label}
-                      className="w-10 h-10"
-                      style={{
-                        filter:
-                          'brightness(0) saturate(100%) invert(71%) sepia(86%) saturate(2872%) hue-rotate(155deg) brightness(101%) contrast(101%) opacity(0.4)',
-                      }}
-                    />
-                    <div className="flex-1">
-                      <div className="font-medium">{item.label}</div>
-                      <div className="text-xs text-primary/30">Coming Soon</div>
-                    </div>
-                  </div>
-                );
-              }
-
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all font-mono ${
-                    isActive
-                      ? 'bg-primary/20 text-primary border border-primary/40 shadow-glow-cyan'
-                      : 'text-primary/60 hover:bg-primary/10 border border-transparent hover:border-primary/20 hover:text-primary'
-                  }`}
-                >
-                  <img
-                    src={item.iconPath}
-                    alt={item.label}
-                    className="w-10 h-10 transition-all"
-                    style={{
-                      filter: isActive
-                        ? 'brightness(0) saturate(100%) invert(71%) sepia(86%) saturate(2872%) hue-rotate(155deg) brightness(101%) contrast(101%)'
-                        : 'brightness(0) saturate(100%) invert(71%) sepia(86%) saturate(2872%) hue-rotate(155deg) brightness(101%) contrast(101%) opacity(0.6)',
-                    }}
-                  />
-                  <span className="font-medium">{item.label}</span>
-                </Link>
-              );
-            })}
-          </nav>
-        </div>
-
-        {/* Footer */}
-        <div className="p-4 border-t border-primary/20 space-y-3">
-          <button
-            onClick={handleLogout}
-            className="w-full py-4 bg-transparent hover:bg-error/10 text-error rounded-lg font-mono font-medium transition-all flex flex-col items-center justify-center gap-2 hover:drop-shadow-[0_0_8px_rgba(255,23,68,0.5)]"
-          >
-            <img
-              src="/assets/logout_icon.svg"
-              alt="Logout"
-              className="w-16 h-16"
-              style={{
-                filter:
-                  'brightness(0) saturate(100%) invert(27%) sepia(94%) saturate(7471%) hue-rotate(347deg) brightness(98%) contrast(105%)',
-              }}
-            />
-            <span className="text-xs">LOGOUT</span>
-          </button>
-          <div className="text-xs text-primary/40 text-center font-mono">DiaryBeast Alpha</div>
         </div>
       </div>
     </>

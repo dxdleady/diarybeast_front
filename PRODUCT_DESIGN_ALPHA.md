@@ -60,21 +60,40 @@
 
 ---
 
-#### 3. Virtual Pet (Simplified)
+#### 3. Virtual Pet (Enhanced Tamagotchi System)
 
 **Visual:**
-- Static SVG/image sprite (not complex animation)
-- 2 states only:
-  - **Happy** (when entries are regular)
-  - **Sad** (when no entry for 2+ days)
+- **ASCII Art animations** (default mode) 🎨
+- Toggle to Emoji/SVG modes
+- 7 animated states with color themes
 
-**Lives System (Simplified for Alpha):**
-- Display: "Pet Health: ❤️❤️❤️❤️❤️❤️❤️" (7 hearts)
-- Lose 1 heart per day without entry
-- Restore 1 heart when entry is created
-- Visual only (no game-over state in Alpha)
+**Lives System:**
+- Maximum: 7 hearts (❤️❤️❤️❤️❤️❤️❤️)
+- Grace period: 24 hours without penalty
+- Loss: -1 heart per 24h after grace period
+- Restore: +2 hearts per diary entry
+- Instant restore: Feed action (+1 heart, 8h cooldown)
 
-**No complex animations:** Use CSS transforms for simple bounce/shake effects.
+**Happiness System (NEW!):**
+- Range: 0-100 with visual progress bar
+- Decay: -5 per 4 hours inactive
+- Restore: +20 per diary entry
+- Boost: +10 from Play action (4h cooldown)
+
+**7 Animation States:**
+1. **idle** - Calm resting (default)
+2. **happy** - Bouncing with joy (happiness ≥70, lives ≥5)
+3. **sad** - Crying (happiness <30 OR lives ≤2)
+4. **critical** - Near death (lives = 0)
+5. **eating** - Consuming food (Feed action, 1.5s)
+6. **playing** - Dancing with ball (Play action OR music playing! 🎵)
+7. **sleeping** - ZZZ state (inactive >12 hours)
+
+**Interactive Actions:**
+- 🍖 **Feed:** +1 life (8h cooldown, FREE in alpha)
+- 🎾 **Play:** +10 happiness (4h cooldown, FREE in alpha)
+
+**Special Feature:** Pet **dances when music plays**! 🎵✨
 
 ---
 

@@ -58,10 +58,18 @@ const config: Config = {
         'glow-blue': 'var(--glow-blue)',
       },
       animation: {
-        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'pulse-slow': 'pulse-slow 10s cubic-bezier(0.4, 0, 0.6, 1) infinite',
         glow: 'glow 2s ease-in-out infinite alternate',
       },
       keyframes: {
+        'pulse-slow': {
+          '0%, 100%': {
+            opacity: '1',
+          },
+          '50%': {
+            opacity: '0.5',
+          },
+        },
         glow: {
           '0%': { boxShadow: 'var(--glow-cyan)' },
           '100%': { boxShadow: 'var(--glow-cyan-strong)' },
