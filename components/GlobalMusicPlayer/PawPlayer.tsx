@@ -2,14 +2,16 @@
 
 import React from 'react';
 import { useAccount } from 'wagmi';
+import { usePathname } from 'next/navigation';
 import { useMusicPlayerStore, type Genre as GenreType } from '@/lib/stores/musicPlayerStore';
 
 export const PawPlayer: React.FC = () => {
   const { isConnected } = useAccount();
+  const pathname = usePathname();
   const { currentGenre, isPlaying, setGenre, togglePlay } = useMusicPlayerStore();
 
-  // Не показываем плеер если не авторизован
-  if (!isConnected) {
+  // Не показываем плеер если не авторизован или на главной странице
+  if (!isConnected || pathname === '/') {
     return null;
   }
 

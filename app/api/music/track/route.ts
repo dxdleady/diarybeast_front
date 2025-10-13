@@ -6,11 +6,11 @@ const MUBERT_COMPANY_ID = process.env.MUBERT_COMPANY_ID!;
 const MUBERT_LICENSE_TOKEN = process.env.MUBERT_LICENSE_TOKEN!;
 
 // Genre mappings to Mubert playlist indices
-// Wildcards work in the final streaming URL: 3.0 = all Ambient, 3 = all Calm
+// Wildcards work in the final streaming URL: 3 = all Calm, 3.0 = all Ambient, 3.0.0 = specific Meditation
 const GENRE_PLAYLISTS: Record<string, string> = {
-  ambient: '3.0', // Calm > Ambient > All channels (Meditation, Om, Zen, etc)
+  ambient: '3.0', // Calm > Ambient > All channels
   lofi: '3', // All Calm category (random from all calm music)
-  nature: '3.0', // Calm > Ambient > All channels (peaceful sounds)
+  nature: '3.0.0', // Calm > Ambient > Meditation (specific channel)
 };
 
 // Customer cache (simple in-memory cache)
