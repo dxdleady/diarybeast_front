@@ -21,16 +21,33 @@ export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [hasAttempted, setHasAttempted] = useState(false);
 
   const authenticate = useCallback(async () => {
     if (!address) return;
 
+    console.log('[Auth] Starting authentication for address:', address);
     setLoading(true);
     setError(null);
+    setHasAttempted(true);
 
     try {
       const message = 'Sign this message to authenticate with DiaryBeast';
-      const signature = await signMessageAsync({ message });
+      console.log('[Auth] Requesting signature...');
+
+      // Add timeout to signature request
+      const signaturePromise = signMessageAsync({
+        message,
+        account: address as `0x${string}`,
+      });
+
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Signature request timed out. Please try again.')), 60000)
+      );
+
+      const signature = (await Promise.race([signaturePromise, timeoutPromise])) as string;
+
+      console.log('[Auth] Signature received:', signature);
 
       const res = await fetch('/api/auth/verify', {
         method: 'POST',
@@ -38,11 +55,16 @@ export function useAuth() {
         body: JSON.stringify({ address, message, signature }),
       });
 
+      console.log('[Auth] API response status:', res.status);
+
       if (!res.ok) {
-        throw new Error('Authentication failed');
+        const errorData = await res.json();
+        console.error('[Auth] API error:', errorData);
+        throw new Error(errorData.error || 'Authentication failed');
       }
 
       const data = await res.json();
+      console.log('[Auth] Authentication successful:', data);
       setUser(data.user);
 
       // Redirect to onboarding if new user or onboarding not completed
@@ -52,24 +74,34 @@ export function useAuth() {
         // Existing user with completed onboarding
         router.push('/diary');
       }
-    } catch (err) {
-      console.error('Authentication error:', err);
-      setError('Failed to authenticate. Please try again.');
+    } catch (err: any) {
+      console.error('[Auth] Authentication error:', err);
+
+      // Check if user rejected the signature
+      if (err.message?.includes('User rejected') || err.code === 4001) {
+        setError('Signature rejected. Please try again.');
+      } else {
+        setError(err.message || 'Failed to authenticate. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
   }, [address, signMessageAsync, router]);
 
+  // Removed auto-authentication on wallet connect
+  // Users must explicitly click to authenticate
+
+  // Reset hasAttempted when address changes
   useEffect(() => {
-    if (isConnected && address && !user && !loading) {
-      authenticate();
-    }
-  }, [isConnected, address, user, loading, authenticate]);
+    setHasAttempted(false);
+    setError(null);
+  }, [address]);
 
   return {
     user,
     loading,
     error,
     isAuthenticated: !!user && isConnected,
+    authenticate,
   };
 }

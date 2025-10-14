@@ -65,8 +65,7 @@ export function useLifeCheck(): UseLifeCheckReturn {
     // Debounce: prevent checks within 30 seconds
     const now = new Date();
     if (lastCheckRef.current) {
-      const secondsSinceLastCheck =
-        (now.getTime() - lastCheckRef.current.getTime()) / 1000;
+      const secondsSinceLastCheck = (now.getTime() - lastCheckRef.current.getTime()) / 1000;
       if (secondsSinceLastCheck < 30) {
         return;
       }
@@ -83,6 +82,10 @@ export function useLifeCheck(): UseLifeCheckReturn {
       });
 
       if (!res.ok) {
+        // If user not found (404), they haven't signed in yet - silently skip
+        if (res.status === 404) {
+          return;
+        }
         console.error('Life check failed:', res.statusText);
         return;
       }
@@ -132,10 +135,7 @@ export function useLifeCheck(): UseLifeCheckReturn {
       const now = new Date();
 
       // If we haven't checked midnight yet, or if we last checked yesterday
-      if (
-        !lastMidnightCheckRef.current ||
-        didCrossMidnight(lastMidnightCheckRef.current)
-      ) {
+      if (!lastMidnightCheckRef.current || didCrossMidnight(lastMidnightCheckRef.current)) {
         lastMidnightCheckRef.current = now;
         checkLives();
       }

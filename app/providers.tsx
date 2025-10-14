@@ -25,7 +25,6 @@ const config = createConfig({
   transports: {
     [baseSepolia.id]: http(),
   },
-  ssr: true,
 });
 
 const queryClient = new QueryClient();
