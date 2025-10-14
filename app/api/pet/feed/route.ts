@@ -62,7 +62,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Calculate effects with personality bonus
-    const personality = (user.petPersonality as PetPersonality) || {
+    const personality = (user.petPersonality as unknown as PetPersonality) || {
       energyLevel: 'normal',
       favoriteFood: 'kibble',
       sleepSchedule: 'afternoon',
