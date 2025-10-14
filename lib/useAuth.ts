@@ -26,14 +26,12 @@ export function useAuth() {
   const authenticate = useCallback(async () => {
     if (!address) return;
 
-    console.log('[Auth] Starting authentication for address:', address);
     setLoading(true);
     setError(null);
     setHasAttempted(true);
 
     try {
       const message = 'Sign this message to authenticate with DiaryBeast';
-      console.log('[Auth] Requesting signature...');
 
       // Add timeout to signature request
       const signaturePromise = signMessageAsync({
@@ -47,15 +45,11 @@ export function useAuth() {
 
       const signature = (await Promise.race([signaturePromise, timeoutPromise])) as string;
 
-      console.log('[Auth] Signature received:', signature);
-
       const res = await fetch('/api/auth/verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ address, message, signature }),
       });
-
-      console.log('[Auth] API response status:', res.status);
 
       if (!res.ok) {
         const errorData = await res.json();
@@ -64,7 +58,6 @@ export function useAuth() {
       }
 
       const data = await res.json();
-      console.log('[Auth] Authentication successful:', data);
       setUser(data.user);
 
       // Redirect to onboarding if new user or onboarding not completed

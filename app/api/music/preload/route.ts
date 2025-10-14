@@ -42,7 +42,6 @@ async function generateTrack(
   }
 
   const trackData = await trackResponse.json();
-  console.log('Track generated:', trackData);
 
   const generation = trackData.data.generations[0];
 
@@ -59,8 +58,6 @@ async function generateTrack(
 
 export async function POST() {
   try {
-    console.log('Starting track preload...');
-
     // Step 1: Register customer
     const customerResponse = await fetch(`${MUBERT_API_BASE}/service/customers`, {
       method: 'POST',
@@ -81,7 +78,6 @@ export async function POST() {
     }
 
     const customerData = await customerResponse.json();
-    console.log('Customer registered:', customerData);
     const customerId = customerData.data.id;
     const accessToken = customerData.data.access.token;
 
@@ -93,14 +89,12 @@ export async function POST() {
     };
 
     for (const genre of Object.keys(GENRE_PLAYLISTS)) {
-      console.log(`Generating 10 tracks for ${genre}...`);
       const playlistIndex = GENRE_PLAYLISTS[genre];
 
       // Generate 10 tracks sequentially to avoid rate limits
       const tracks = [];
       for (let i = 0; i < 10; i++) {
         try {
-          console.log(`Generating track ${i + 1}/10 for ${genre}...`);
           const track = await generateTrack(customerId, accessToken, genre, playlistIndex);
           tracks.push(track);
           // Small delay between requests
@@ -111,7 +105,6 @@ export async function POST() {
       }
 
       allTracks[genre] = tracks;
-      console.log(`Generated ${tracks.length} tracks for ${genre}`);
     }
 
     return NextResponse.json({

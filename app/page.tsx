@@ -11,7 +11,6 @@ export default function Home() {
   const { address, isConnected } = useAccount();
 
   const handleConnect = () => {
-    console.log('[Home] Connect button clicked, address:', address);
     if (isConnected && address) {
       authenticate();
     }

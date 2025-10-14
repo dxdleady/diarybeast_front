@@ -47,7 +47,6 @@ export default function Diary() {
       const userData = await userRes.json();
       const entriesData = await entriesRes.json();
 
-      console.log('User data loaded:', { coinsBalance: userData.coinsBalance });
       setUserData(userData);
       setEntries(entriesData.entries || []);
     } catch (error) {
@@ -58,13 +57,8 @@ export default function Diary() {
   }
 
   async function handleSummaryGenerated(summary: any) {
-    console.log('handleSummaryGenerated called:', {
-      summary,
-      currentBalance: userData?.coinsBalance,
-    });
     // Reload user data to update balance FIRST
     await loadData();
-    console.log('Data reloaded, new balance should be:', summary.newBalance);
     // THEN show modal with updated balance
     setSummaryData(summary);
     setShowSummaryModal(true);
