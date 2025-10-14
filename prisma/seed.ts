@@ -60,11 +60,58 @@ async function main() {
         imageUrl: '/backgrounds/space.jpg',
         sortOrder: 4,
       },
+      // Pet Accessories
+      {
+        id: 'acc-bandana',
+        type: 'accessory',
+        name: 'Cool Bandana',
+        description: 'Stylish red bandana for your pet',
+        price: 25,
+        imageUrl: '/accessories/bandana.png',
+        sortOrder: 0,
+      },
+      {
+        id: 'acc-hat',
+        type: 'accessory',
+        name: 'Party Hat',
+        description: 'Celebrate every day!',
+        price: 35,
+        imageUrl: '/accessories/hat.png',
+        sortOrder: 1,
+      },
+      {
+        id: 'acc-glasses',
+        type: 'accessory',
+        name: 'Cool Shades',
+        description: 'Look cool with these sunglasses',
+        price: 40,
+        imageUrl: '/accessories/glasses.png',
+        sortOrder: 2,
+      },
+      {
+        id: 'acc-bow',
+        type: 'accessory',
+        name: 'Fancy Bow',
+        description: 'Elegant bow tie or ribbon',
+        price: 30,
+        imageUrl: '/accessories/bow.png',
+        sortOrder: 3,
+      },
+      {
+        id: 'acc-crown',
+        type: 'accessory',
+        name: 'Royal Crown',
+        description: 'For the most prestigious pets',
+        price: 100,
+        imageUrl: '/accessories/crown.png',
+        sortOrder: 4,
+      },
     ],
   });
 
   console.log('✅ Shop items seeded successfully!');
   console.log('   - 5 backgrounds added');
+  console.log('   - 5 accessories added');
 }
 
 main()

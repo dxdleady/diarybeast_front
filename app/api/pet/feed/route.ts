@@ -1,12 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { burnTokens } from '@/lib/blockchain';
+import {
+  getFoodItem,
+  calculateFoodEffect,
+  type PetPersonality,
+} from '@/lib/gamification/itemsConfig';
 
 const MAX_LIVES = 7;
-const FEED_COOLDOWN_MS = 8 * 60 * 60 * 1000; // 8 hours
+const MAX_HAPPINESS = 100;
 
 export async function POST(req: NextRequest) {
   try {
-    const { userAddress } = await req.json();
+    const { userAddress, foodId = 'basic-kibble' } = await req.json();
 
     if (!userAddress) {
       return NextResponse.json({ error: 'Missing userAddress' }, { status: 400 });
@@ -21,12 +27,25 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    // Check if already at max lives
-    if (user.livesRemaining >= MAX_LIVES) {
-      return NextResponse.json({ error: 'Pet is already at maximum health' }, { status: 400 });
+    // Get food item
+    const food = getFoodItem(foodId);
+    if (!food) {
+      return NextResponse.json({ error: 'Invalid food item' }, { status: 400 });
+    }
+
+    // Check if user has food in inventory
+    const inventory = (user.inventory as Record<string, number>) || {};
+    const foodCount = inventory[foodId] || 0;
+
+    if (foodCount <= 0) {
+      return NextResponse.json(
+        { error: `No ${food.name} in inventory. Buy from shop first!` },
+        { status: 400 }
+      );
     }
 
     // Check cooldown
+    const FEED_COOLDOWN_MS = food.cooldown * 60 * 60 * 1000;
     if (user.lastFeedTime) {
       const timeSinceLastFeed = Date.now() - new Date(user.lastFeedTime).getTime();
       if (timeSinceLastFeed < FEED_COOLDOWN_MS) {
@@ -42,23 +61,58 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Update user: +1 life
-    const newLives = Math.min(MAX_LIVES, user.livesRemaining + 1);
+    // Calculate effects with personality bonus
+    const personality = (user.petPersonality as unknown as PetPersonality) || {
+      energyLevel: 'normal',
+      favoriteFood: 'kibble',
+      sleepSchedule: 'afternoon',
+    };
+    const { livesGain, happinessGain } = calculateFoodEffect(foodId, personality);
+
+    // Check if already at max lives
+    if (user.livesRemaining >= MAX_LIVES && livesGain > 0) {
+      return NextResponse.json({ error: 'Pet is already at maximum health' }, { status: 400 });
+    }
+
+    // Decrease food count in inventory
+    const newInventory = { ...inventory };
+    newInventory[foodId] = foodCount - 1;
+    if (newInventory[foodId] === 0) {
+      delete newInventory[foodId]; // Remove from inventory if empty
+    }
+
+    // Update user stats (no token burn - already paid in shop)
+    const newLives = Math.min(MAX_LIVES, user.livesRemaining + livesGain);
+    const newHappiness = Math.min(MAX_HAPPINESS, user.happiness + happinessGain);
+
     const updatedUser = await prisma.user.update({
       where: { id: user.id },
       data: {
         livesRemaining: newLives,
+        happiness: newHappiness,
+        inventory: newInventory,
         lastFeedTime: new Date(),
-        petState: 'eating', // Set animation state
+        petState: 'eating',
         lastActiveAt: new Date(),
       },
     });
+
+    // Check if favorite food
+    const isFavorite = personality.favoriteFood === food.id.replace('-', '');
 
     return NextResponse.json({
       success: true,
       newLives: updatedUser.livesRemaining,
       newHappiness: updatedUser.happiness,
-      message: `Fed pet! Lives restored to ${updatedUser.livesRemaining}/${MAX_LIVES}`,
+      inventory: updatedUser.inventory,
+      livesGain,
+      happinessGain,
+      foodUsed: food.name,
+      foodRemaining: newInventory[foodId] || 0,
+      isFavorite,
+      message: isFavorite
+        ? `Your pet LOVES ${food.name}! 2x effect! ❤️`
+        : `Fed pet ${food.name}! Lives: ${updatedUser.livesRemaining}/${MAX_LIVES}`,
     });
   } catch (error) {
     console.error('Feed error:', error);

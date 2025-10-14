@@ -30,8 +30,10 @@ model User {
   // Tamagotchi features
   happiness           Int       @default(100)
   petState            String    @default("idle")
+  petPersonality      Json?     // {energyLevel: 'hyper', favoriteFood: 'meat', sleepSchedule: 'night'}
   lastFeedTime        DateTime?
   lastPlayTime        DateTime?
+  inventory           Json?     // {timeSkip: 2, healthPotion: 1, happyPill: 3}
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
 

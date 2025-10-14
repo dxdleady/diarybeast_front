@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { syncUserBalance } from '@/lib/blockchain';
+import { calculateHappinessDecay } from '@/lib/gamification/lifeSystem';
+import { generatePetPersonality } from '@/lib/gamification/itemsConfig';
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ address: string }> }) {
   try {
@@ -14,7 +16,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ addr
       // Continue even if sync fails
     }
 
-    const user = await prisma.user.findUnique({
+    let user = await prisma.user.findUnique({
       where: { walletAddress: address.toLowerCase() },
       include: {
         _count: {
@@ -25,6 +27,39 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ addr
 
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    // Generate pet personality if not exists
+    if (!user.petPersonality) {
+      const personality = generatePetPersonality(address);
+      user = await prisma.user.update({
+        where: { id: user.id },
+        data: { petPersonality: personality as any },
+        include: {
+          _count: {
+            select: { entries: true },
+          },
+        },
+      });
+    }
+
+    // Apply happiness decay based on time since last active
+    const { newHappiness, happinessLost } = calculateHappinessDecay(
+      user.happiness,
+      user.lastActiveAt
+    );
+
+    // Update happiness if it changed
+    if (happinessLost > 0) {
+      user = await prisma.user.update({
+        where: { id: user.id },
+        data: { happiness: newHappiness },
+        include: {
+          _count: {
+            select: { entries: true },
+          },
+        },
+      });
     }
 
     return NextResponse.json({
@@ -40,7 +75,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ addr
       livesRemaining: user.livesRemaining,
       currentStreak: user.currentStreak,
       longestStreak: user.longestStreak,
-      lastEntryDate: user.lastEntryDate?.toISOString(),
+      lastEntryDate: user.lastEntryDate?.toISOString() ?? null,
       lastActiveAt: user.lastActiveAt.toISOString(),
       aiAnalysisEnabled: user.aiAnalysisEnabled,
       activeBackground: user.activeBackground,
@@ -49,8 +84,10 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ addr
       // Tamagotchi fields
       happiness: user.happiness,
       petState: user.petState,
-      lastFeedTime: user.lastFeedTime?.toISOString(),
-      lastPlayTime: user.lastPlayTime?.toISOString(),
+      petPersonality: user.petPersonality,
+      inventory: user.inventory ?? {},
+      lastFeedTime: user.lastFeedTime?.toISOString() ?? null,
+      lastPlayTime: user.lastPlayTime?.toISOString() ?? null,
     });
   } catch (error) {
     const errorMessage =

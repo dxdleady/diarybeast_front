@@ -18,6 +18,16 @@ export const CHECK_COOLDOWN_HOURS = 1;
 export const LIVES_RESTORE_AMOUNT = 2;
 export const MAX_LIVES = 7;
 
+// Happiness decay constants
+export const HAPPINESS_DECAY_INTERVAL_HOURS = 2; // Decay every 2 hours
+export const HAPPINESS_DECAY_AMOUNT = 1; // -1% per interval
+export const MAX_HAPPINESS = 100;
+
+// Reward multiplier thresholds
+export const HAPPINESS_PENALTY_THRESHOLD = 50; // Below 50% happiness = penalties
+export const LIVES_PENALTY_THRESHOLD = 3; // Below 3 lives = penalties
+export const CRITICAL_LIVES_THRESHOLD = 1; // 1 life = severe penalty
+
 // ============================================================================
 // TYPES
 // ============================================================================
@@ -53,10 +63,7 @@ export interface LifeLossResult {
  * - 72 hours inactive: 2 lives lost (48h after grace)
  * - 8 days inactive: 7 lives lost (all lives)
  */
-export function calculateLifeLoss(
-  lastActiveAt: Date,
-  currentLives: number
-): LifeLossResult {
+export function calculateLifeLoss(lastActiveAt: Date, currentLives: number): LifeLossResult {
   const now = new Date();
   const hoursInactive = (now.getTime() - lastActiveAt.getTime()) / (1000 * 60 * 60);
 
@@ -94,8 +101,8 @@ export function calculateLifeLoss(
     newLives === 0
       ? `Your pet lost all lives after ${daysInactive} days away!`
       : actualLivesLost > 0
-      ? `Your pet missed you! Lost ${actualLivesLost} ${actualLivesLost === 1 ? 'life' : 'lives'}`
-      : 'Welcome back!';
+        ? `Your pet missed you! Lost ${actualLivesLost} ${actualLivesLost === 1 ? 'life' : 'lives'}`
+        : 'Welcome back!';
 
   return {
     livesLost: actualLivesLost,
@@ -114,8 +121,7 @@ export function calculateLifeLoss(
  */
 export function shouldCheckLifeLoss(lastLifeLossCheck: Date): boolean {
   const now = new Date();
-  const hoursSinceLastCheck =
-    (now.getTime() - lastLifeLossCheck.getTime()) / (1000 * 60 * 60);
+  const hoursSinceLastCheck = (now.getTime() - lastLifeLossCheck.getTime()) / (1000 * 60 * 60);
 
   return hoursSinceLastCheck >= CHECK_COOLDOWN_HOURS;
 }
@@ -198,10 +204,7 @@ export function didCrossMidnight(lastActiveAt: Date): boolean {
  * - This triggers a life check even if <24 hours passed
  * - Integrates with grace period system
  */
-export function shouldCheckDailyEntry(
-  lastActiveAt: Date,
-  lastEntryDate: Date | null
-): boolean {
+export function shouldCheckDailyEntry(lastActiveAt: Date, lastEntryDate: Date | null): boolean {
   if (!didCrossMidnight(lastActiveAt)) {
     return false;
   }
@@ -220,4 +223,123 @@ export function shouldCheckDailyEntry(
   lastEntry.setHours(0, 0, 0, 0);
 
   return lastEntry.getTime() < yesterday.getTime();
+}
+
+// ============================================================================
+// HAPPINESS DECAY SYSTEM
+// ============================================================================
+
+/**
+ * Calculate happiness decay based on time since last activity
+ *
+ * Formula:
+ * - hoursSinceLastActive = now - lastActiveAt
+ * - decayIntervals = floor(hoursSinceLastActive / HAPPINESS_DECAY_INTERVAL_HOURS)
+ * - happinessLost = decayIntervals * HAPPINESS_DECAY_AMOUNT
+ * - newHappiness = max(0, currentHappiness - happinessLost)
+ *
+ * Examples:
+ * - 1 hour inactive: 0 decay (< 2 hours)
+ * - 2 hours inactive: -1% happiness
+ * - 4 hours inactive: -2% happiness
+ * - 10 hours inactive: -5% happiness
+ */
+export function calculateHappinessDecay(
+  currentHappiness: number,
+  lastActiveAt: Date
+): {
+  happinessLost: number;
+  newHappiness: number;
+  hoursSinceActive: number;
+} {
+  const now = new Date();
+  const hoursSinceActive = (now.getTime() - lastActiveAt.getTime()) / (1000 * 60 * 60);
+
+  // Calculate decay intervals (every 2 hours)
+  const decayIntervals = Math.floor(hoursSinceActive / HAPPINESS_DECAY_INTERVAL_HOURS);
+
+  if (decayIntervals <= 0) {
+    return {
+      happinessLost: 0,
+      newHappiness: currentHappiness,
+      hoursSinceActive,
+    };
+  }
+
+  const happinessLost = decayIntervals * HAPPINESS_DECAY_AMOUNT;
+  const newHappiness = Math.max(0, currentHappiness - happinessLost);
+
+  return {
+    happinessLost,
+    newHappiness,
+    hoursSinceActive,
+  };
+}
+
+// ============================================================================
+// REWARD MULTIPLIER SYSTEM
+// ============================================================================
+
+/**
+ * Calculate reward multiplier based on pet health and happiness
+ *
+ * Multiplier ranges:
+ * - 1.0x = Perfect condition (happiness >= 70, lives >= 5)
+ * - 0.8x = Good condition (happiness >= 50, lives >= 3)
+ * - 0.5x = Poor condition (happiness < 50 OR lives < 3)
+ * - 0.25x = Critical condition (lives <= 1)
+ *
+ * Examples:
+ * - happiness=80, lives=6 → 1.0x (10 DIARY → 10 DIARY)
+ * - happiness=45, lives=5 → 0.5x (10 DIARY → 5 DIARY)
+ * - happiness=30, lives=2 → 0.25x (10 DIARY → 2.5 DIARY)
+ * - happiness=90, lives=1 → 0.25x (critical lives override)
+ */
+export function calculateRewardMultiplier(
+  happiness: number,
+  livesRemaining: number
+): {
+  multiplier: number;
+  reason: string;
+} {
+  // Critical condition: 1 life or less = severe penalty (overrides everything)
+  if (livesRemaining <= CRITICAL_LIVES_THRESHOLD) {
+    return {
+      multiplier: 0.25,
+      reason: 'Critical health! Your pet is dying - take care of them!',
+    };
+  }
+
+  // Perfect condition: happiness >= 70 AND lives >= 5
+  if (happiness >= 70 && livesRemaining >= 5) {
+    return {
+      multiplier: 1.0,
+      reason: 'Perfect! Your pet is happy and healthy',
+    };
+  }
+
+  // Good condition: happiness >= 50 AND lives >= 3
+  if (happiness >= 50 && livesRemaining >= 3) {
+    return {
+      multiplier: 0.8,
+      reason: 'Your pet is in good condition',
+    };
+  }
+
+  // Poor condition: low happiness OR low lives
+  if (happiness < HAPPINESS_PENALTY_THRESHOLD || livesRemaining < LIVES_PENALTY_THRESHOLD) {
+    return {
+      multiplier: 0.5,
+      reason:
+        happiness < HAPPINESS_PENALTY_THRESHOLD
+          ? 'Your pet is unhappy - play with them more!'
+          : 'Your pet is weak - feed them to restore health!',
+    };
+  }
+
+  // Default fallback
+  return {
+    multiplier: 0.8,
+    reason: 'Your pet is doing okay',
+  };
 }

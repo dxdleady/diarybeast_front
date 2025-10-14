@@ -11,6 +11,9 @@ export interface EntrySuccessModalProps {
   newLives: number;
   streakBonus?: number;
   milestone?: string | null;
+  baseAmount?: number;
+  multiplier?: number;
+  multiplierReason?: string;
   onClose: () => void;
 }
 
@@ -33,6 +36,9 @@ export function EntrySuccessModal({
   newLives,
   streakBonus = 0,
   milestone = null,
+  baseAmount,
+  multiplier,
+  multiplierReason,
   onClose,
 }: EntrySuccessModalProps) {
   // Trigger confetti on mount
@@ -132,6 +138,23 @@ export function EntrySuccessModal({
               </div>
               <span className="text-2xl font-bold text-tokens font-mono">+{tokensEarned}</span>
             </div>
+
+            {/* Multiplier Info */}
+            {multiplier !== undefined && baseAmount !== undefined && multiplier < 1.0 && (
+              <div className="mt-2 pt-2 border-t border-primary/20">
+                <div className="flex items-center justify-between text-xs font-mono">
+                  <span className="text-primary/60">Base reward:</span>
+                  <span className="text-primary/60">{baseAmount} DIARY</span>
+                </div>
+                <div className="flex items-center justify-between text-xs font-mono">
+                  <span className="text-warning font-semibold">Multiplier: {multiplier}x</span>
+                  <span className="text-tokens font-semibold">{tokensEarned} DIARY</span>
+                </div>
+                {multiplierReason && (
+                  <div className="mt-1 text-xs text-warning/80 font-mono">{multiplierReason}</div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Streak Bonus */}

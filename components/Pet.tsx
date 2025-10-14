@@ -7,31 +7,37 @@ import type { PetState as AnimationState } from '@/lib/ascii/types';
 import { usePetStore, formatCooldown } from '@/lib/stores/petStore';
 import { useAccount } from 'wagmi';
 import { useMusic } from '@/lib/contexts/MusicContext';
+import { FoodSelectModal } from './FoodSelectModal';
 
 interface PetProps {
   animal: 'cat' | 'dog';
   livesRemaining: number;
-  hasWrittenToday?: boolean;
   useImage?: boolean;
   petName?: string;
   happiness?: number;
   lastFeedTime?: string | null;
   lastPlayTime?: string | null;
+  inventory?: Record<string, number>;
+  petPersonality?: any;
+  onStatsChange?: () => void;
 }
 
 export function Pet({
   animal,
   livesRemaining,
-  hasWrittenToday = false,
   useImage = false,
   petName,
   happiness = 100,
   lastFeedTime,
   lastPlayTime,
+  inventory = {},
+  petPersonality,
+  onStatsChange,
 }: PetProps) {
   const { address } = useAccount();
   const [emotion, setEmotion] = useState<EmotionState>('happy');
   const [actionInProgress, setActionInProgress] = useState(false);
+  const [showFoodModal, setShowFoodModal] = useState(false);
 
   // Zustand store
   const petStore = usePetStore();
@@ -45,7 +51,7 @@ export function Pet({
     // MusicProvider not available, skip music animation
   }
 
-  // Initialize pet store on mount
+  // Sync pet store with server data when props change
   useEffect(() => {
     petStore.initializePet({
       lives: livesRemaining,
@@ -93,12 +99,12 @@ export function Pet({
 
     // Priority 5: Mood-based states (happiness + lives)
     // Very happy: high happiness AND good health
-    if (happiness >= 70 && livesRemaining >= 5) {
+    if (petStore.happiness >= 70 && livesRemaining >= 5) {
       return 'happy';
     }
 
     // Sad: low happiness OR low health
-    if (happiness < 30 || livesRemaining <= 2) {
+    if (petStore.happiness < 30 || livesRemaining <= 2) {
       return 'sad';
     }
 
@@ -133,13 +139,31 @@ export function Pet({
     return 'text-red-400';
   };
 
-  // Handle feed action
-  const handleFeed = async () => {
+  // Handle feed action - now opens food select modal
+  const handleFeedClick = () => {
     if (!address || actionInProgress || !petStore.canFeed) return;
+
+    // Check if has any food in inventory
+    const hasFoodInInventory = Object.values(inventory).some((count) => count > 0);
+    if (!hasFoodInInventory) {
+      alert('No food in inventory! Buy food from the shop first.');
+      return;
+    }
+
+    setShowFoodModal(true);
+  };
+
+  // Handle food selection from modal
+  const handleFoodSelect = async (foodId: string) => {
+    if (!address || actionInProgress) return;
 
     setActionInProgress(true);
     try {
-      await petStore.feed(address);
+      await petStore.feed(address, foodId);
+      // Refresh userData after successful feed
+      if (onStatsChange) {
+        onStatsChange();
+      }
     } catch (error: any) {
       console.error('Feed failed:', error);
       alert(error.message || 'Failed to feed pet');
@@ -155,6 +179,10 @@ export function Pet({
     setActionInProgress(true);
     try {
       await petStore.play(address);
+      // Refresh userData after successful play
+      if (onStatsChange) {
+        onStatsChange();
+      }
     } catch (error: any) {
       console.error('Play failed:', error);
       alert(error.message || 'Failed to play with pet');
@@ -163,12 +191,39 @@ export function Pet({
     }
   };
 
+  // Critical health effect classes
+  const getCriticalEffectClasses = () => {
+    if (livesRemaining === 0) {
+      return 'animate-shake border-error/60 shadow-[0_0_20px_rgba(255,23,68,0.5)]';
+    }
+    if (livesRemaining <= 1) {
+      return 'animate-pulse border-error/40 shadow-[0_0_15px_rgba(255,23,68,0.3)]';
+    }
+    if (livesRemaining <= 2 || petStore.happiness < 30) {
+      return 'border-warning/40';
+    }
+    return 'border-primary/30';
+  };
+
   return (
     <div className="text-center">
       {/* Tamagotchi Screen Container - LCD Style */}
-      <div className="bg-bg-card border-4 border-primary/30 rounded-lg p-3 mx-2 shadow-glow-cyan">
+      <div
+        className={`bg-bg-card border-4 rounded-lg p-3 mx-2 shadow-glow-cyan transition-all ${getCriticalEffectClasses()}`}
+      >
         {/* Pet Display - LCD Screen */}
         <div className="lcd-screen rounded p-2 mb-3 relative overflow-hidden min-h-[120px] flex items-center justify-center">
+          {/* Critical Warning Overlay */}
+          {livesRemaining <= 1 && (
+            <div className="absolute top-1 right-1 text-error text-xs font-mono font-bold animate-pulse drop-shadow-[0_0_4px_rgba(255,23,68,0.8)]">
+              [!CRITICAL!]
+            </div>
+          )}
+          {livesRemaining === 2 && (
+            <div className="absolute top-1 right-1 text-warning text-xs font-mono font-bold animate-pulse drop-shadow-[0_0_4px_rgba(255,193,7,0.8)]">
+              [WARNING]
+            </div>
+          )}
           <AsciiPet animal={animal} state={getAnimationState()} />
         </div>
 
@@ -191,23 +246,27 @@ export function Pet({
                 {livesRemaining}/7
               </span>
             </div>
-            <div className="flex gap-0.5 justify-center">
+            <div className="flex gap-1 justify-center">
               {Array.from({ length: 7 }).map((_, i) => {
                 const isActive = i < livesRemaining;
-                const isClaimed = hasWrittenToday && i === 0;
                 return (
                   <span
                     key={i}
                     className={`
-                      text-base font-mono leading-none transition-all
+                      text-lg font-mono leading-none transition-all
                       ${
                         isActive
-                          ? isClaimed
-                            ? 'text-success drop-shadow-[0_0_4px_rgba(57,255,20,0.6)]'
-                            : 'text-error drop-shadow-[0_0_4px_rgba(255,23,68,0.6)]'
-                          : 'text-inactive'
+                          ? 'text-error drop-shadow-[0_0_4px_rgba(255,23,68,0.6)]'
+                          : 'text-transparent'
                       }
                     `}
+                    style={
+                      !isActive
+                        ? {
+                            WebkitTextStroke: '1px rgba(255,255,255,0.4)',
+                          }
+                        : undefined
+                    }
                   >
                     {isActive ? '♥' : livesRemaining === 0 && i === 0 ? '×' : '♡'}
                   </span>
@@ -221,34 +280,31 @@ export function Pet({
             <div className="flex items-center justify-between mb-1.5">
               <span className="text-xs text-primary font-mono font-bold">JOY</span>
               <span
-                className={`text-xs font-mono font-bold ${happiness >= 80 ? 'text-success' : happiness >= 60 ? 'text-tokens' : happiness >= 40 ? 'text-warning' : 'text-error'}`}
+                className={`text-xs font-mono font-bold ${petStore.happiness >= 80 ? 'text-success' : petStore.happiness >= 60 ? 'text-tokens' : petStore.happiness >= 40 ? 'text-warning' : 'text-error'}`}
               >
-                {happiness}%
+                {petStore.happiness}%
               </span>
             </div>
-            <div className="font-mono text-xs flex items-center">
+            <div className="font-mono text-xs flex items-center gap-0.5">
               <span className="text-primary/40">[</span>
-              <div className="flex-1 mx-0.5">
-                {Array.from({ length: 10 }).map((_, i) => {
-                  const threshold = (i + 1) * 10;
-                  const isActive = happiness >= threshold;
+              <div className="flex-1 flex gap-px">
+                {Array.from({ length: 50 }).map((_, i) => {
+                  const threshold = (i + 1) * 2; // Each block = 2%
+                  const isActive = petStore.happiness >= threshold;
+
+                  let colorClass = 'bg-inactive/30';
+                  if (isActive) {
+                    if (petStore.happiness >= 80) colorClass = 'bg-success';
+                    else if (petStore.happiness >= 60) colorClass = 'bg-tokens';
+                    else if (petStore.happiness >= 40) colorClass = 'bg-warning';
+                    else colorClass = 'bg-error';
+                  }
+
                   return (
-                    <span
+                    <div
                       key={i}
-                      className={
-                        isActive
-                          ? happiness >= 80
-                            ? 'text-success'
-                            : happiness >= 60
-                              ? 'text-tokens'
-                              : happiness >= 40
-                                ? 'text-warning'
-                                : 'text-error'
-                          : 'text-inactive'
-                      }
-                    >
-                      {isActive ? '█' : '░'}
-                    </span>
+                      className={`flex-1 h-2 rounded-[1px] ${colorClass} transition-colors duration-300`}
+                    />
                   );
                 })}
               </div>
@@ -261,11 +317,13 @@ export function Pet({
         <div className="mt-3 space-y-1.5">
           {/* Feed Button */}
           <button
-            onClick={handleFeed}
+            onClick={handleFeedClick}
             disabled={!petStore.canFeed || actionInProgress || livesRemaining >= 7}
             className="w-full px-3 py-2 bg-transparent hover:bg-primary/10 disabled:bg-transparent disabled:text-disabled disabled:border-inactive border border-primary/40 hover:border-primary disabled:hover:border-inactive text-primary rounded font-mono text-xs transition-all flex items-center justify-between group hover:shadow-glow-cyan disabled:shadow-none"
           >
-            <span className="font-semibold">[FEED] +1♥</span>
+            <span className="font-semibold">
+              {actionInProgress && petStore.state === 'eating' ? '[FEEDING...]' : '[FEED]'}
+            </span>
             <span className="text-[10px] opacity-70 group-hover:opacity-100">
               {livesRemaining >= 7
                 ? 'MAX HP'
@@ -278,12 +336,14 @@ export function Pet({
           {/* Play Button */}
           <button
             onClick={handlePlay}
-            disabled={!petStore.canPlay || actionInProgress || happiness >= 100}
+            disabled={!petStore.canPlay || actionInProgress || petStore.happiness >= 100}
             className="w-full px-3 py-2 bg-transparent hover:bg-accent/10 disabled:bg-transparent disabled:text-disabled disabled:border-inactive border border-accent/40 hover:border-accent disabled:hover:border-inactive text-accent rounded font-mono text-xs transition-all flex items-center justify-between group hover:shadow-glow-green disabled:shadow-none"
           >
-            <span className="font-semibold">[PLAY] +10☺</span>
+            <span className="font-semibold">
+              {actionInProgress && petStore.state === 'playing' ? '[PLAYING...]' : '[PLAY] +10☺'}
+            </span>
             <span className="text-[10px] opacity-70 group-hover:opacity-100">
-              {happiness >= 100
+              {petStore.happiness >= 100
                 ? 'MAX JOY'
                 : petStore.canPlay
                   ? '◆ READY'
@@ -294,13 +354,34 @@ export function Pet({
 
         {/* Info Footer */}
         <div className="mt-2 pt-2 border-t border-primary/10">
-          <div className="text-[10px] text-primary/50 font-mono text-center space-x-2">
-            <span className="text-success">♥</span>=claimed
-            <span className="text-error">♥</span>=active
-            <span className="text-inactive">♡</span>=lost
+          <div className="text-xs text-primary/50 font-mono text-center space-x-3 flex items-center justify-center">
+            <span className="flex items-center gap-1">
+              <span className="text-error text-base">♥</span>
+              <span>=active</span>
+            </span>
+            <span className="flex items-center gap-1">
+              <span
+                className="text-transparent text-base"
+                style={{
+                  WebkitTextStroke: '1px rgba(255,255,255,0.4)',
+                }}
+              >
+                ♡
+              </span>
+              <span>=lost</span>
+            </span>
           </div>
         </div>
       </div>
+
+      {/* Food Select Modal */}
+      <FoodSelectModal
+        isOpen={showFoodModal}
+        onClose={() => setShowFoodModal(false)}
+        inventory={inventory}
+        onSelectFood={handleFoodSelect}
+        petPersonality={petPersonality}
+      />
     </div>
   );
 }

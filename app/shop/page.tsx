@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import { useAccount } from 'wagmi';
 import { useRouter } from 'next/navigation';
 import { BottomNavOverlay } from '@/components/BottomNavOverlay';
+import { FOOD_ITEMS, CONSUMABLE_ITEMS } from '@/lib/gamification/itemsConfig';
+import { getFoodEmoji, getFoodArt, getConsumableArt } from '@/lib/ascii/foodArt';
 
 interface ShopItem {
   id: string;
@@ -14,7 +16,7 @@ interface ShopItem {
   imageUrl: string;
 }
 
-type TabType = 'persona' | 'pet' | 'animals';
+type TabType = 'food' | 'consumables' | 'animals';
 
 export default function Shop() {
   const { address } = useAccount();
@@ -28,7 +30,9 @@ export default function Shop() {
   const [activeBackground, setActiveBackground] = useState<string | null>(null);
   const [activeAccessory, setActiveAccessory] = useState<string | null>(null);
   const [applying, setApplying] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<TabType>('persona');
+  const [activeTab, setActiveTab] = useState<TabType>('food');
+  const [quantity, setQuantity] = useState<Record<string, number>>({});
+  const [inventory, setInventory] = useState<Record<string, number>>({});
 
   useEffect(() => {
     if (!address) {
@@ -59,6 +63,7 @@ export default function Shop() {
       setBalance(userData.coinsBalance || 0);
       setActiveBackground(userData.activeBackground || null);
       setActiveAccessory(userData.activeAccessory || null);
+      setInventory((userData.inventory as Record<string, number>) || {});
     } catch (error) {
       console.error('Failed to load shop data:', error);
     } finally {
@@ -99,10 +104,11 @@ export default function Shop() {
     }
   }
 
-  async function handlePurchase(itemId: string, price: number) {
+  async function handlePurchase(itemId: string, price: number, itemType: string, qty: number = 1) {
     if (!address) return;
 
-    if (balance < price) {
+    const totalCost = price * qty;
+    if (balance < totalCost) {
       alert('Not enough DIARY tokens! Write more entries to earn tokens.');
       return;
     }
@@ -112,15 +118,19 @@ export default function Shop() {
       const res = await fetch('/api/shop/purchase', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userAddress: address, itemId }),
+        body: JSON.stringify({
+          userAddress: address,
+          itemId,
+          itemType,
+          quantity: qty,
+        }),
       });
 
       const data = await res.json();
 
       if (res.ok && data.success) {
-        alert('🎉 Purchase successful!');
-        setPurchases([...purchases, itemId]);
-        setBalance(data.updatedBalance);
+        alert(`🎉 Purchased ${qty}x ${data.itemPurchased}!`);
+        await loadData(); // Reload to update inventory
       } else {
         alert(data.error || 'Purchase failed');
       }
@@ -160,36 +170,24 @@ export default function Shop() {
     );
   }
 
-  // Filter items by tab
-  const filteredItems = items.filter((item) => {
-    if (activeTab === 'persona') {
-      return item.type === 'background';
-    } else if (activeTab === 'pet') {
-      return item.type === 'accessory';
-    } else if (activeTab === 'animals') {
-      return item.type === 'animal';
-    }
-    return false;
-  });
-
   const tabs = [
     {
-      id: 'persona' as TabType,
-      label: 'Persona Items',
+      id: 'food' as TabType,
+      label: 'Food',
       iconPath: '/assets/tamagochi-personal-items---like-food---toys--games.svg',
-      description: 'Backgrounds & Themes',
+      description: 'Feed your pet',
     },
     {
-      id: 'pet' as TabType,
-      label: 'Pet Accessories',
-      iconPath: '/assets/tamagochi-pet-accessorizes.svg',
-      description: 'Coming Soon',
+      id: 'consumables' as TabType,
+      label: 'Consumables',
+      iconPath: '/assets/tamagochi-total-items.svg',
+      description: 'Power-ups & Items',
     },
     {
       id: 'animals' as TabType,
-      label: 'Collectible Pets',
+      label: 'Collectibles',
       iconPath: '/assets/colletible-tamagochies---it-will-be-diffrenet-coll.svg',
-      description: 'NFT Collabs',
+      description: 'NFT Pets',
     },
   ];
 
@@ -228,7 +226,7 @@ export default function Shop() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`px-6 py-4 font-semibold transition-all relative ${
+                className={`px-6 py-4 font-mono font-semibold transition-all relative ${
                   activeTab === tab.id ? 'text-primary' : 'text-primary/40 hover:text-primary/70'
                 }`}
               >
@@ -236,7 +234,7 @@ export default function Shop() {
                   <img
                     src={tab.iconPath}
                     alt={tab.label}
-                    className="w-12 h-12"
+                    className="w-8 h-8"
                     style={{
                       filter:
                         activeTab === tab.id
@@ -245,103 +243,111 @@ export default function Shop() {
                     }}
                   />
                   <div className="text-left">
-                    <div className="font-display font-bold">{tab.label}</div>
-                    <div className="text-xs text-primary/50 font-mono">{tab.description}</div>
+                    <div className="font-bold">{tab.label}</div>
+                    <div className="text-xs opacity-60">{tab.description}</div>
                   </div>
                 </div>
                 {activeTab === tab.id && (
-                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-primary rounded-t shadow-glow-cyan"></div>
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary shadow-glow-cyan" />
                 )}
               </button>
             ))}
           </div>
         </div>
 
-        {/* Items Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
-          {filteredItems.map((item) => {
-            const owned = purchases.includes(item.id);
-            const canAfford = balance >= item.price;
-            const isPurchasing = purchasing === item.id;
-            const isActive =
-              (item.type === 'background' && activeBackground === item.id) ||
-              (item.type === 'accessory' && activeAccessory === item.id);
-            const isApplying = applying === item.id;
+        {/* Food Items */}
+        {activeTab === 'food' && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {Object.values(FOOD_ITEMS).map((food) => {
+              const owned = inventory[food.id] || 0;
+              const qty = quantity[food.id] || 1;
+              const totalCost = food.price * qty;
 
-            return (
-              <div
-                key={item.id}
-                className={`bg-bg-card rounded-xl overflow-hidden border-2 ${
-                  isActive
-                    ? 'border-primary shadow-glow-cyan'
-                    : owned
-                      ? 'border-success'
-                      : 'border-primary/20'
-                } transition-transform hover:scale-105`}
-              >
-                {/* Image */}
-                <div className="h-32 lcd-screen flex items-center justify-center relative">
-                  {item.type === 'background' ? (
-                    <img
-                      src="/assets/tamagochi-personal-items---like-food---toys--games.svg"
-                      alt="Background"
-                      className="w-14 h-14"
-                      style={{
-                        filter:
-                          'brightness(0) saturate(100%) invert(71%) sepia(86%) saturate(2872%) hue-rotate(155deg) brightness(101%) contrast(101%)',
-                      }}
-                    />
-                  ) : item.type === 'animal' ? (
-                    <img
-                      src="/assets/colletible-tamagochies---it-will-be-diffrenet-coll.svg"
-                      alt="Animal"
-                      className="w-14 h-14"
-                      style={{
-                        filter:
-                          'brightness(0) saturate(100%) invert(71%) sepia(86%) saturate(2872%) hue-rotate(155deg) brightness(101%) contrast(101%)',
-                      }}
-                    />
-                  ) : (
-                    <img
-                      src="/assets/tamagochi-pet-accessorizes.svg"
-                      alt="Accessory"
-                      className="w-14 h-14"
-                      style={{
-                        filter:
-                          'brightness(0) saturate(100%) invert(71%) sepia(86%) saturate(2872%) hue-rotate(155deg) brightness(101%) contrast(101%)',
-                      }}
-                    />
-                  )}
-                  {isActive ? (
-                    <div className="absolute top-1 right-1 bg-primary text-bg-dark px-2 py-0.5 rounded-full text-xs font-mono font-bold animate-pulse">
-                      ★
+              return (
+                <div
+                  key={food.id}
+                  className="bg-bg-card border-2 border-primary/20 rounded-xl p-6 hover:border-primary/40 transition-all hover:shadow-glow-cyan"
+                >
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="lcd-screen rounded p-2 flex items-center justify-center min-w-[80px]">
+                      <pre className="text-primary text-xs leading-tight">
+                        {getFoodArt(food.id)}
+                      </pre>
                     </div>
-                  ) : owned ? (
-                    <div className="absolute top-1 right-1 bg-success text-bg-dark px-2 py-0.5 rounded-full text-xs font-mono font-bold">
-                      ✓
+                    <div className="flex-1">
+                      <h3 className="text-xl font-bold text-primary font-mono">{food.name}</h3>
+                      <p className="text-sm text-primary/60 font-mono">{food.description}</p>
                     </div>
-                  ) : null}
-                </div>
-
-                {/* Details */}
-                <div className="p-3">
-                  <div className="text-xs text-primary/50 uppercase mb-1 font-mono">
-                    {item.type}
                   </div>
-                  <h3 className="text-base font-display font-bold mb-1 text-primary line-clamp-1">
-                    {item.name}
-                  </h3>
-                  <p className="text-xs text-primary/60 mb-3 font-mono line-clamp-2">
-                    {item.description}
-                  </p>
 
-                  {/* Price & Action */}
-                  <div className="space-y-2">
-                    <div className="text-center">
-                      {item.price === 0 ? (
-                        <span className="text-success text-sm font-bold font-mono">FREE</span>
-                      ) : (
-                        <div className="text-tokens drop-shadow-[0_0_6px_rgba(255,215,0,0.5)] flex items-center justify-center gap-1">
+                  <div className="space-y-2 mb-4">
+                    <div className="flex items-center justify-between text-sm font-mono">
+                      <span className="text-primary/60">Effects:</span>
+                      <div className="flex gap-2">
+                        {food.livesGain > 0 && (
+                          <span className="text-success">+{food.livesGain}♥</span>
+                        )}
+                        {food.happinessGain > 0 && (
+                          <span className="text-tokens">+{food.happinessGain}☺</span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between text-sm font-mono">
+                      <span className="text-primary/60">Cooldown:</span>
+                      <span className="text-primary">{food.cooldown}h</span>
+                    </div>
+                    {owned > 0 && (
+                      <div className="flex items-center justify-between text-sm font-mono">
+                        <span className="text-primary/60">In Stock:</span>
+                        <span className="text-accent font-bold">x{owned}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-2 mb-4">
+                    <button
+                      onClick={() => setQuantity({ ...quantity, [food.id]: Math.max(1, qty - 1) })}
+                      className="px-3 py-1 bg-bg-lcd hover:bg-primary/10 border border-primary/30 rounded font-mono text-primary"
+                    >
+                      -
+                    </button>
+                    <input
+                      type="number"
+                      min="1"
+                      max={food.maxStack - owned}
+                      value={qty}
+                      onChange={(e) =>
+                        setQuantity({
+                          ...quantity,
+                          [food.id]: Math.max(1, parseInt(e.target.value) || 1),
+                        })
+                      }
+                      className="flex-1 px-3 py-1 bg-bg-lcd border border-primary/30 rounded font-mono text-center text-primary"
+                    />
+                    <button
+                      onClick={() => setQuantity({ ...quantity, [food.id]: qty + 1 })}
+                      className="px-3 py-1 bg-bg-lcd hover:bg-primary/10 border border-primary/30 rounded font-mono text-primary"
+                    >
+                      +
+                    </button>
+                  </div>
+
+                  <button
+                    onClick={() => handlePurchase(food.id, food.price, 'food', qty)}
+                    disabled={
+                      purchasing === food.id || balance < totalCost || owned >= food.maxStack
+                    }
+                    className="w-full px-4 py-3 bg-transparent hover:bg-primary/10 disabled:bg-transparent disabled:text-disabled disabled:border-inactive border-2 border-primary hover:border-primary disabled:hover:border-inactive text-primary rounded font-mono font-bold transition-all hover:shadow-glow-cyan disabled:shadow-none flex items-center justify-center gap-2"
+                  >
+                    {purchasing === food.id ? (
+                      '[PURCHASING...]'
+                    ) : owned >= food.maxStack ? (
+                      '[MAX STACK]'
+                    ) : (
+                      <>
+                        <span>[BUY {qty}x]</span>
+                        <div className="flex items-center gap-1">
+                          <span className="text-tokens">{totalCost}</span>
                           <img
                             src="/assets/tamagochi-coin.svg"
                             alt="DIARY"
@@ -351,171 +357,121 @@ export default function Shop() {
                                 'brightness(0) saturate(100%) invert(80%) sepia(48%) saturate(1000%) hue-rotate(2deg) brightness(104%) contrast(101%)',
                             }}
                           />
-                          <span className="text-lg font-bold font-mono">{item.price}</span>
                         </div>
-                      )}
-                    </div>
+                      </>
+                    )}
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        )}
 
-                    {isActive ? (
-                      <button
-                        disabled
-                        className="w-full px-3 py-1.5 bg-primary/20 border border-primary rounded text-xs cursor-not-allowed font-mono text-primary"
-                      >
-                        [ACTIVE]
-                      </button>
-                    ) : owned ? (
-                      <button
-                        onClick={() => handleApply(item.id, item.type)}
-                        disabled={isApplying}
-                        className="w-full px-3 py-1.5 bg-transparent hover:bg-success/10 border border-success hover:border-success rounded text-xs font-mono font-semibold transition-all text-success hover:shadow-glow-green"
-                      >
-                        {isApplying ? '[...]' : '[APPLY]'}
-                      </button>
-                    ) : (
-                      <button
-                        onClick={() => handlePurchase(item.id, item.price)}
-                        disabled={!canAfford || isPurchasing || item.price === 0}
-                        className={`w-full px-3 py-1.5 rounded text-xs font-mono font-semibold transition-all ${
-                          canAfford
-                            ? 'bg-transparent hover:bg-primary/10 border border-primary/40 hover:border-primary text-primary hover:shadow-glow-cyan'
-                            : 'bg-transparent border border-inactive text-disabled cursor-not-allowed'
-                        }`}
-                      >
-                        {isPurchasing
-                          ? '[...]'
-                          : item.price === 0
-                            ? '[DEF]'
-                            : canAfford
-                              ? '[BUY]'
-                              : '[NO]'}
-                      </button>
+        {/* Consumable Items */}
+        {activeTab === 'consumables' && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {Object.values(CONSUMABLE_ITEMS).map((item) => {
+              const owned = inventory[item.id] || 0;
+
+              return (
+                <div
+                  key={item.id}
+                  className="bg-bg-card border-2 border-accent/20 rounded-xl p-6 hover:border-accent/40 transition-all hover:shadow-glow-green"
+                >
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="lcd-screen rounded p-2 flex items-center justify-center min-w-[80px]">
+                      <pre className="text-accent text-xs leading-tight">
+                        {getConsumableArt(item.id)}
+                      </pre>
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-xl font-bold text-accent font-mono">{item.name}</h3>
+                      <p className="text-sm text-primary/60 font-mono">{item.description}</p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2 mb-4">
+                    <div className="flex items-center justify-between text-sm font-mono">
+                      <span className="text-primary/60">Effect:</span>
+                      <span className="text-accent font-bold">
+                        {item.effect === 'timeSkip' && '⏰ Reset Cooldowns'}
+                        {item.effect === 'healthRestore' && `+${item.value}♥ Lives`}
+                        {item.effect === 'happinessBoost' && `+${item.value}☺ Happiness`}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between text-sm font-mono">
+                      <span className="text-primary/60">Category:</span>
+                      <span className="text-primary capitalize">{item.category}</span>
+                    </div>
+                    {owned > 0 && (
+                      <div className="flex items-center justify-between text-sm font-mono">
+                        <span className="text-primary/60">In Stock:</span>
+                        <span className="text-accent font-bold">x{owned}</span>
+                      </div>
                     )}
                   </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
 
-        {filteredItems.length === 0 && (
+                  <button
+                    onClick={() => handlePurchase(item.id, item.price, 'consumable', 1)}
+                    disabled={purchasing === item.id || balance < item.price}
+                    className="w-full px-4 py-3 bg-transparent hover:bg-accent/10 disabled:bg-transparent disabled:text-disabled disabled:border-inactive border-2 border-accent hover:border-accent disabled:hover:border-inactive text-accent rounded font-mono font-bold transition-all hover:shadow-glow-green disabled:shadow-none flex items-center justify-center gap-2"
+                  >
+                    {purchasing === item.id ? (
+                      '[PURCHASING...]'
+                    ) : (
+                      <>
+                        <span>[BUY]</span>
+                        <div className="flex items-center gap-1">
+                          <span className="text-tokens">{item.price}</span>
+                          <img
+                            src="/assets/tamagochi-coin.svg"
+                            alt="DIARY"
+                            className="w-4 h-4"
+                            style={{
+                              filter:
+                                'brightness(0) saturate(100%) invert(80%) sepia(48%) saturate(1000%) hue-rotate(2deg) brightness(104%) contrast(101%)',
+                            }}
+                          />
+                        </div>
+                      </>
+                    )}
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Empty State for Animals Tab */}
+        {activeTab === 'animals' && (
           <div className="text-center py-12 bg-bg-card rounded-xl border border-primary/20 shadow-glow-cyan">
-            {activeTab === 'animals' ? (
-              // NFT Collectible Pets Coming Soon
-              <div className="max-w-2xl mx-auto px-8">
-                <div className="mb-6 flex justify-center animate-bounce">
-                  <img
-                    src="/assets/colletible-tamagochies---it-will-be-diffrenet-coll.svg"
-                    alt="Collectible Pets"
-                    className="w-24 h-24"
-                    style={{
-                      filter:
-                        'brightness(0) saturate(100%) invert(71%) sepia(86%) saturate(2872%) hue-rotate(155deg) brightness(101%) contrast(101%)',
-                    }}
-                  />
-                </div>
-                <h2 className="text-3xl font-display font-bold text-primary mb-4 drop-shadow-[0_0_10px_rgba(0,229,255,0.3)]">
-                  Collectible Pets
-                </h2>
-                <p className="text-lg text-primary/70 mb-6 font-mono">
-                  Exclusive NFT collaborations with top collections
-                </p>
-
-                <div className="bg-bg-lcd/50 rounded-xl p-6 mb-6 border border-primary/20">
-                  <div className="text-sm text-primary/60 mb-4 font-mono font-bold">
-                    What&apos;s Coming:
-                  </div>
-                  <div className="space-y-3">
-                    <div className="flex items-start gap-3 text-primary">
-                      <span className="text-2xl">🎨</span>
-                      <div className="flex-1 text-left">
-                        <div className="font-display font-semibold">Your NFT Collection</div>
-                        <div className="text-xs text-primary/50 font-mono">
-                          Use your owned NFTs as diary companions
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-3 text-primary">
-                      <span className="text-2xl">🏆</span>
-                      <div className="flex-1 text-left">
-                        <div className="font-display font-semibold">Blue-Chip Collections</div>
-                        <div className="text-xs text-primary/50 font-mono">
-                          Partnerships with top-tier NFT projects
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-3 text-primary">
-                      <span className="text-2xl">✨</span>
-                      <div className="flex-1 text-left">
-                        <div className="font-display font-semibold">Exclusive Variants</div>
-                        <div className="text-xs text-primary/50 font-mono">
-                          Special edition pets for collectors
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="text-sm text-primary/50 mb-4 font-mono">
-                  Connect your wallet to bring your NFT collection to life!
-                </div>
-
-                <div className="inline-block btn-primary px-6 py-3 rounded-lg font-mono font-semibold">
-                  🔔 COMING Q1 2025
-                </div>
+            <div className="max-w-2xl mx-auto px-8">
+              <div className="mb-6 flex justify-center animate-bounce">
+                <img
+                  src="/assets/colletible-tamagochies---it-will-be-diffrenet-coll.svg"
+                  alt="Collectible Pets"
+                  className="w-24 h-24"
+                  style={{
+                    filter:
+                      'brightness(0) saturate(100%) invert(71%) sepia(86%) saturate(2872%) hue-rotate(155deg) brightness(101%) contrast(101%)',
+                  }}
+                />
               </div>
-            ) : activeTab === 'pet' ? (
-              // Pet Accessories Coming Soon
-              <div className="max-w-xl mx-auto px-8">
-                <div className="mb-4 flex justify-center">
-                  <img
-                    src="/assets/tamagochi-pet-accessorizes.svg"
-                    alt="Pet Accessories"
-                    className="w-20 h-20"
-                    style={{
-                      filter:
-                        'brightness(0) saturate(100%) invert(71%) sepia(86%) saturate(2872%) hue-rotate(155deg) brightness(101%) contrast(101%)',
-                    }}
-                  />
-                </div>
-                <h2 className="text-2xl font-display font-bold text-primary mb-3 drop-shadow-[0_0_10px_rgba(0,229,255,0.3)]">
-                  Pet Accessories
-                </h2>
-                <p className="text-primary/70 mb-4 font-mono">
-                  Dress up your pet with exclusive accessories
-                </p>
-                <div className="text-sm text-primary/50 font-mono">
-                  Hats, Glasses, Outfits & More
-                </div>
-                <div className="mt-6 inline-block btn-primary px-6 py-2 rounded-lg font-mono font-semibold text-sm">
-                  [COMING SOON]
-                </div>
+              <h2 className="text-3xl font-display font-bold text-primary mb-4 drop-shadow-[0_0_10px_rgba(0,229,255,0.3)]">
+                Collectible Pets
+              </h2>
+              <p className="text-lg text-primary/70 mb-6 font-mono">
+                Exclusive NFT collaborations with top collections
+              </p>
+              <div className="inline-block btn-primary px-6 py-3 rounded-lg font-mono font-semibold">
+                🔔 COMING Q1 2025
               </div>
-            ) : (
-              // Default Empty State
-              <div>
-                <div className="mb-4 flex justify-center">
-                  <img
-                    src={tabs.find((t) => t.id === activeTab)?.iconPath || ''}
-                    alt="Category"
-                    className="w-20 h-20"
-                    style={{
-                      filter:
-                        'brightness(0) saturate(100%) invert(71%) sepia(86%) saturate(2872%) hue-rotate(155deg) brightness(101%) contrast(101%)',
-                    }}
-                  />
-                </div>
-                <p className="text-xl font-display font-semibold mb-2 text-primary">
-                  No items in this category yet
-                </p>
-                <p className="text-sm text-primary/60 font-mono">
-                  Check back soon for new{' '}
-                  {tabs.find((t) => t.id === activeTab)?.label.toLowerCase()}!
-                </p>
-              </div>
-            )}
+            </div>
           </div>
         )}
       </div>
+
+      <BottomNavOverlay />
     </div>
   );
 }
