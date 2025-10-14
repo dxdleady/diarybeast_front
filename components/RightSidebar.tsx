@@ -25,6 +25,8 @@ interface UserData {
   happiness?: number;
   lastFeedTime?: string | null;
   lastPlayTime?: string | null;
+  inventory?: Record<string, number>;
+  petPersonality?: any;
 }
 
 interface RightSidebarProps {

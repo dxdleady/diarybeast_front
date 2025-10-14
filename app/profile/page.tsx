@@ -154,15 +154,13 @@ export default function Profile() {
               <Pet
                 animal={userData.selectedAnimal}
                 livesRemaining={userData.livesRemaining}
-                hasWrittenToday={
-                  userData.lastEntryDate
-                    ? new Date(userData.lastEntryDate).toDateString() === new Date().toDateString()
-                    : false
-                }
                 petName={userData.petName}
                 happiness={userData.happiness}
                 lastFeedTime={userData.lastFeedTime}
                 lastPlayTime={userData.lastPlayTime}
+                inventory={userData.inventory || {}}
+                petPersonality={userData.petPersonality}
+                onStatsChange={loadUserData}
               />
             </div>
 

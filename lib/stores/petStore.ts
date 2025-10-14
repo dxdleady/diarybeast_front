@@ -33,7 +33,7 @@ interface PetStoreState {
     lastPlayTime?: string | null;
   }) => void;
   setState: (newState: PetState) => void;
-  feed: (userAddress: string) => Promise<void>;
+  feed: (userAddress: string, foodId: string) => Promise<void>;
   play: (userAddress: string) => Promise<void>;
   updateHappiness: (delta: number) => void;
   updateLives: (newLives: number) => void;

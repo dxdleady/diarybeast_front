@@ -264,7 +264,6 @@ export function Pet({
                       !isActive
                         ? {
                             WebkitTextStroke: '1px rgba(255,255,255,0.4)',
-                            textStroke: '1px rgba(255,255,255,0.4)',
                           }
                         : undefined
                     }
@@ -365,7 +364,6 @@ export function Pet({
                 className="text-transparent text-base"
                 style={{
                   WebkitTextStroke: '1px rgba(255,255,255,0.4)',
-                  textStroke: '1px rgba(255,255,255,0.4)',
                 }}
               >
                 ♡
