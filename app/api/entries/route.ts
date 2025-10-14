@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { verifyMessage } from 'viem';
 import { mintTokens } from '@/lib/blockchain';
-import { restoreLives } from '@/lib/gamification/lifeSystem';
+import { restoreLives, calculateRewardMultiplier } from '@/lib/gamification/lifeSystem';
 import { calculateStreakBonus } from '@/lib/gamification/streakRewards';
 
 export async function POST(req: NextRequest) {
@@ -70,12 +70,21 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Determine reward
+    // Calculate reward multiplier based on pet condition
+    const { multiplier, reason: multiplierReason } = calculateRewardMultiplier(
+      user.happiness,
+      user.livesRemaining
+    );
+
+    // Determine base reward
     const entryCount = await prisma.entry.count({
       where: { userId: user.id },
     });
     const isFirstEntry = entryCount === 1;
-    const rewardAmount = isFirstEntry ? 50 : 10;
+    const baseReward = isFirstEntry ? 50 : 10;
+
+    // Apply multiplier to reward
+    const rewardAmount = Math.floor(baseReward * multiplier);
 
     // Mint tokens
     let txHash: string;
@@ -93,7 +102,9 @@ export async function POST(req: NextRequest) {
         userId: user.id,
         type: isFirstEntry ? 'first_entry' : 'daily_entry',
         amount: rewardAmount,
-        description: isFirstEntry ? 'First entry bonus!' : 'Daily entry reward',
+        description: isFirstEntry
+          ? `First entry bonus! (${multiplier}x multiplier)`
+          : `Daily entry reward (${multiplier}x multiplier)`,
         txHash,
       },
     });
@@ -120,8 +131,9 @@ export async function POST(req: NextRequest) {
     const newStreak = yesterdayEntry ? user.currentStreak + 1 : 1;
     const newLongestStreak = Math.max(user.longestStreak, newStreak);
 
-    // Check for streak milestone bonus
-    const { bonus: streakBonus, milestone } = calculateStreakBonus(newStreak);
+    // Check for streak milestone bonus and apply multiplier
+    const { bonus: baseStreakBonus, milestone } = calculateStreakBonus(newStreak);
+    const streakBonus = Math.floor(baseStreakBonus * multiplier);
     const totalReward = rewardAmount + streakBonus;
 
     // Create streak bonus reward if milestone reached
@@ -131,7 +143,7 @@ export async function POST(req: NextRequest) {
           userId: user.id,
           type: 'streak_bonus',
           amount: streakBonus,
-          description: `${milestone.label} bonus!`,
+          description: `${milestone.label} bonus! (${multiplier}x multiplier)`,
           txHash: 'streak_milestone',
         },
       });
@@ -159,7 +171,11 @@ export async function POST(req: NextRequest) {
       },
       reward: {
         amount: rewardAmount,
+        baseAmount: baseReward,
+        multiplier,
+        multiplierReason,
         streakBonus,
+        baseStreakBonus,
         totalAmount: totalReward,
         type: isFirstEntry ? 'first_entry' : 'daily_entry',
         txHash,

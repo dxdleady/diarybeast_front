@@ -30,9 +30,10 @@ interface UserData {
 interface RightSidebarProps {
   userData: UserData | null;
   entries?: Entry[];
+  onStatsChange?: () => void;
 }
 
-export function RightSidebar({ userData, entries = [] }: RightSidebarProps) {
+export function RightSidebar({ userData, entries = [], onStatsChange }: RightSidebarProps) {
   const [showAchievements, setShowAchievements] = useState(false);
 
   // Check if user has written today
@@ -180,11 +181,13 @@ export function RightSidebar({ userData, entries = [] }: RightSidebarProps) {
               <Pet
                 animal={userData.selectedAnimal}
                 livesRemaining={userData.livesRemaining}
-                hasWrittenToday={hasWrittenToday}
                 petName={userData.petName}
                 happiness={userData.happiness}
                 lastFeedTime={userData.lastFeedTime}
                 lastPlayTime={userData.lastPlayTime}
+                inventory={userData.inventory || {}}
+                petPersonality={userData.petPersonality}
+                onStatsChange={onStatsChange}
               />
             </>
           )}

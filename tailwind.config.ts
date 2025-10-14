@@ -60,6 +60,7 @@ const config: Config = {
       animation: {
         'pulse-slow': 'pulse-slow 10s cubic-bezier(0.4, 0, 0.6, 1) infinite',
         glow: 'glow 2s ease-in-out infinite alternate',
+        shake: 'shake 0.5s cubic-bezier(.36,.07,.19,.97) infinite',
       },
       keyframes: {
         'pulse-slow': {
@@ -73,6 +74,11 @@ const config: Config = {
         glow: {
           '0%': { boxShadow: 'var(--glow-cyan)' },
           '100%': { boxShadow: 'var(--glow-cyan-strong)' },
+        },
+        shake: {
+          '0%, 100%': { transform: 'translateX(0)' },
+          '10%, 30%, 50%, 70%, 90%': { transform: 'translateX(-2px)' },
+          '20%, 40%, 60%, 80%': { transform: 'translateX(2px)' },
         },
       },
     },

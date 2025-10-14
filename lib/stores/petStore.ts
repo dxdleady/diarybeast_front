@@ -59,7 +59,7 @@ export const usePetStore = create<PetStoreState>((set, get) => ({
 
     set({
       lives: data.lives,
-      happiness: data.happiness,
+      happiness: data.happiness ?? 100, // Fallback to 100 if undefined
       lastFeedTime: lastFeed,
       lastPlayTime: lastPlay,
     });
@@ -70,8 +70,8 @@ export const usePetStore = create<PetStoreState>((set, get) => ({
   // Set pet animation state
   setState: (newState) => set({ state: newState }),
 
-  // Feed action
-  feed: async (userAddress) => {
+  // Feed action (now requires foodId from inventory)
+  feed: async (userAddress, foodId: string) => {
     const { canFeed, lives } = get();
 
     if (!canFeed) {
@@ -94,7 +94,7 @@ export const usePetStore = create<PetStoreState>((set, get) => ({
       const res = await fetch('/api/pet/feed', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userAddress }),
+        body: JSON.stringify({ userAddress, foodId }),
       });
 
       if (!res.ok) {

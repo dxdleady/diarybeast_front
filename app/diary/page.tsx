@@ -62,11 +62,12 @@ export default function Diary() {
       summary,
       currentBalance: userData?.coinsBalance,
     });
-    setSummaryData(summary);
-    setShowSummaryModal(true);
-    // Reload user data to update balance
+    // Reload user data to update balance FIRST
     await loadData();
     console.log('Data reloaded, new balance should be:', summary.newBalance);
+    // THEN show modal with updated balance
+    setSummaryData(summary);
+    setShowSummaryModal(true);
   }
 
   async function handleSave() {
@@ -115,6 +116,9 @@ export default function Diary() {
         livesRestored: data.livesRestored || 0,
         oldLives: data.oldLives || 0,
         newLives: data.updatedUser.livesRemaining,
+        baseAmount: data.reward.baseAmount,
+        multiplier: data.reward.multiplier,
+        multiplierReason: data.reward.multiplierReason,
       });
       setShowSuccessModal(true);
       setContent('');
@@ -221,7 +225,7 @@ export default function Diary() {
 
         {/* Right Sidebar - Stats, Pet, Menu */}
         <div className="w-80 flex-shrink-0 overflow-hidden">
-          <RightSidebar userData={userData} entries={entries} />
+          <RightSidebar userData={userData} entries={entries} onStatsChange={loadData} />
         </div>
       </div>
 
@@ -235,6 +239,9 @@ export default function Diary() {
           livesRestored={successData.livesRestored}
           oldLives={successData.oldLives}
           newLives={successData.newLives}
+          baseAmount={successData.baseAmount}
+          multiplier={successData.multiplier}
+          multiplierReason={successData.multiplierReason}
           onClose={() => setShowSuccessModal(false)}
         />
       )}
