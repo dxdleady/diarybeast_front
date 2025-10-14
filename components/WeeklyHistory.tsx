@@ -153,12 +153,6 @@ export function WeeklyHistory({
         throw new Error(data.error || 'Failed to generate summary');
       }
 
-      console.log('Summary generated successfully:', {
-        oldBalance: userBalance,
-        newBalance: data.newBalance,
-        deducted: userBalance - data.newBalance,
-      });
-
       if (onSummaryGenerated) {
         onSummaryGenerated({
           ...data.summary,

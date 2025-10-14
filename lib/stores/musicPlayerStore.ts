@@ -111,7 +111,6 @@ export const useMusicPlayerStore = create<MusicPlayerState>((set, get) => {
 
       // If no stream cached for current genre, fetch it first
       if (!streamCache[currentGenre]) {
-        console.log('No stream cached for', currentGenre, '- fetching...');
         set({ isLoading: true });
         try {
           const stream = await fetchStreamLink(currentGenre);

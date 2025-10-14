@@ -94,7 +94,6 @@ export async function POST(req: NextRequest) {
     let txHash: string;
     try {
       txHash = await burnTokens(userAddress, SUMMARY_COST);
-      console.log('Tokens burned on blockchain:', { txHash, amount: SUMMARY_COST });
     } catch (error) {
       console.error('Token burn failed:', error);
       return NextResponse.json({ error: 'Failed to burn tokens on blockchain' }, { status: 500 });
@@ -118,12 +117,6 @@ export async function POST(req: NextRequest) {
         data: { coinsBalance: user.coinsBalance - SUMMARY_COST },
       }),
     ]);
-
-    console.log('Summary created and tokens deducted:', {
-      txHash,
-      newBalance: updatedUser.coinsBalance,
-      deducted: SUMMARY_COST,
-    });
 
     return NextResponse.json({
       success: true,

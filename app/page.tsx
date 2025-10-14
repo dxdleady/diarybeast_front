@@ -4,9 +4,17 @@ import Image from 'next/image';
 import { WalletConnect } from '@/components/WalletConnect';
 import { PetEvolution } from '@/components/PetEvolution';
 import { useAuth } from '@/lib/useAuth';
+import { useAccount } from 'wagmi';
 
 export default function Home() {
-  const { loading, error } = useAuth();
+  const { loading, error, authenticate } = useAuth();
+  const { address, isConnected } = useAccount();
+
+  const handleConnect = () => {
+    if (isConnected && address) {
+      authenticate();
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-bg-dark text-primary px-4 py-6">
@@ -117,14 +125,27 @@ export default function Home() {
             <div className="text-primary/60 font-mono animate-pulse text-sm">
               [AUTHENTICATING...]
             </div>
+          ) : error ? (
+            <div className="flex flex-col items-center gap-2">
+              <div className="text-error text-xs font-mono border border-error/20 bg-error/10 rounded-lg p-2 max-w-md mx-auto">
+                {error}
+              </div>
+              <button
+                onClick={authenticate}
+                className="btn-primary font-semibold py-3 px-8 rounded-lg transition-colors font-mono"
+              >
+                Try Again
+              </button>
+            </div>
+          ) : isConnected && address ? (
+            <button
+              onClick={handleConnect}
+              className="btn-primary font-semibold py-3 px-8 rounded-lg transition-colors font-mono"
+            >
+              Sign In
+            </button>
           ) : (
             <WalletConnect />
-          )}
-
-          {error && (
-            <div className="mt-2 text-error text-xs font-mono border border-error/20 bg-error/10 rounded-lg p-2 max-w-md mx-auto">
-              {error}
-            </div>
           )}
         </div>
 
@@ -141,6 +162,7 @@ export default function Home() {
                 src="/assets/base.png"
                 alt="Base"
                 fill
+                sizes="20px"
                 className="object-contain group-hover:drop-shadow-[0_0_8px_rgba(59,130,246,0.5)]"
               />
             </div>
@@ -167,6 +189,7 @@ export default function Home() {
                 src="/assets/mubert.png"
                 alt="Mubert"
                 fill
+                sizes="20px"
                 className="object-contain group-hover:drop-shadow-[0_0_8px_rgba(168,85,247,0.5)]"
               />
             </div>
