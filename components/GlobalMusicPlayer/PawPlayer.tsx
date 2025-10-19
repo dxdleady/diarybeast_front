@@ -10,8 +10,8 @@ export const PawPlayer: React.FC = () => {
   const pathname = usePathname();
   const { currentGenre, isPlaying, setGenre, togglePlay } = useMusicPlayerStore();
 
-  // Не показываем плеер если не авторизован или на главной странице
-  if (!isConnected || pathname === '/') {
+  // Don't show player if not connected, on home page, or during onboarding
+  if (!isConnected || pathname === '/' || pathname === '/onboarding') {
     return null;
   }
 

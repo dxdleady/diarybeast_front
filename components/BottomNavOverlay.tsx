@@ -17,8 +17,8 @@ export function BottomNavOverlay() {
   const { isConnected } = useAccount();
   const { disconnect } = useDisconnect();
 
-  // Don't show menu on auth page or when not connected
-  if (!isConnected || pathname === '/') {
+  // Don't show menu on auth page, onboarding, or when not connected
+  if (!isConnected || pathname === '/' || pathname === '/onboarding') {
     return null;
   }
 
