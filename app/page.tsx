@@ -14,30 +14,7 @@ export default function Home() {
 
   useEffect(() => {
     setMounted(true);
-    console.log(
-      '[Home] mounted, isConnected:',
-      isConnected,
-      'address:',
-      address,
-      'loading:',
-      loading
-    );
   }, []);
-
-  useEffect(() => {
-    console.log(
-      '[Home] state changed - isConnected:',
-      isConnected,
-      'address:',
-      address,
-      'loading:',
-      loading,
-      'mounted:',
-      mounted,
-      'isAuthenticated:',
-      isAuthenticated
-    );
-  }, [isConnected, address, loading, mounted, isAuthenticated]);
 
   const handleConnect = () => {
     if (isConnected && address) {

@@ -15,12 +15,7 @@ export function WalletConnect() {
 
   useEffect(() => {
     setMounted(true);
-    console.log('[WalletConnect] mounted, isConnected:', isConnected, 'address:', address);
   }, []);
-
-  useEffect(() => {
-    console.log('[WalletConnect] isConnected changed to:', isConnected, 'address:', address);
-  }, [isConnected, address]);
 
   if (!mounted) {
     return (
