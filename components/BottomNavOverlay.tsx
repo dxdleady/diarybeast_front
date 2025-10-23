@@ -22,8 +22,14 @@ export function BottomNavOverlay() {
     return null;
   }
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    // Disconnect wallet first
     disconnect();
+
+    // Small delay to ensure disconnect completes
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    // Navigate to home
     router.push('/');
   };
 
@@ -94,7 +100,6 @@ export function BottomNavOverlay() {
               borderColor: isActive ? 'rgba(0, 229, 255, 1)' : 'transparent',
               backgroundColor: isActive ? 'rgba(0, 229, 255, 0.4)' : 'transparent',
               boxShadow: isActive ? '0 0 20px rgba(0, 229, 255, 0.6)' : 'none',
-              animation: isActive ? 'pulse-slow 6s cubic-bezier(0.4, 0, 0.6, 1) infinite' : 'none',
             }}
           >
             <div className="w-14 h-14 flex items-center justify-center">

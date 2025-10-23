@@ -5,10 +5,39 @@ import { WalletConnect } from '@/components/WalletConnect';
 import { PetEvolution } from '@/components/PetEvolution';
 import { useAuth } from '@/lib/useAuth';
 import { useAccount } from 'wagmi';
+import { useEffect, useState } from 'react';
 
 export default function Home() {
-  const { loading, error, authenticate } = useAuth();
+  const { loading, error, authenticate, isAuthenticated } = useAuth();
   const { address, isConnected } = useAccount();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    console.log(
+      '[Home] mounted, isConnected:',
+      isConnected,
+      'address:',
+      address,
+      'loading:',
+      loading
+    );
+  }, []);
+
+  useEffect(() => {
+    console.log(
+      '[Home] state changed - isConnected:',
+      isConnected,
+      'address:',
+      address,
+      'loading:',
+      loading,
+      'mounted:',
+      mounted,
+      'isAuthenticated:',
+      isAuthenticated
+    );
+  }, [isConnected, address, loading, mounted, isAuthenticated]);
 
   const handleConnect = () => {
     if (isConnected && address) {
@@ -121,28 +150,22 @@ export default function Home() {
 
         {/* CTA */}
         <div className="pt-2 flex flex-col items-center">
-          {loading ? (
-            <div className="text-primary/60 font-mono animate-pulse text-sm">
-              [AUTHENTICATING...]
+          {error && (
+            <div className="text-error text-xs font-mono border border-error/20 bg-error/10 rounded-lg p-2 max-w-md mx-auto mb-2">
+              {error}
             </div>
-          ) : error ? (
-            <div className="flex flex-col items-center gap-2">
-              <div className="text-error text-xs font-mono border border-error/20 bg-error/10 rounded-lg p-2 max-w-md mx-auto">
-                {error}
-              </div>
-              <button
-                onClick={authenticate}
-                className="btn-primary font-semibold py-3 px-8 rounded-lg transition-colors font-mono"
-              >
-                Try Again
-              </button>
-            </div>
+          )}
+          {!mounted ? (
+            <button className="btn-primary font-semibold py-3 px-8 rounded-lg transition-colors font-mono">
+              Play & Grow
+            </button>
           ) : isConnected && address ? (
             <button
               onClick={handleConnect}
-              className="btn-primary font-semibold py-3 px-8 rounded-lg transition-colors font-mono"
+              disabled={loading}
+              className="btn-primary font-semibold py-3 px-8 rounded-lg transition-colors font-mono disabled:opacity-50"
             >
-              Sign In
+              {loading ? '[AUTHENTICATING...]' : 'Sign In'}
             </button>
           ) : (
             <WalletConnect />

@@ -5,6 +5,8 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Pet } from '@/components/Pet';
 import { BottomNavOverlay } from '@/components/BottomNavOverlay';
+import { Identity, Name, Address } from '@coinbase/onchainkit/identity';
+import { base } from 'wagmi/chains';
 
 type TabType = 'overview' | 'achievements' | 'analysis';
 
@@ -106,7 +108,7 @@ export default function Profile() {
   ];
 
   return (
-    <div className="min-h-screen bg-bg-dark text-white p-8">
+    <div className="min-h-screen bg-bg-dark text-white p-8 pb-40">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="mb-8">
@@ -148,6 +150,19 @@ export default function Profile() {
         {/* Overview Tab */}
         {activeTab === 'overview' && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Wallet Info */}
+            <div className="bg-bg-card border border-primary/20 rounded-xl p-6 hover:border-primary/40 transition-all shadow-glow-cyan md:col-span-3">
+              <h2 className="text-lg font-display font-semibold mb-4 text-primary">Wallet</h2>
+              {address && (
+                <div className="flex flex-col gap-1">
+                  <Identity address={address} chain={base}>
+                    <Name className="text-lg text-primary font-mono font-bold" />
+                    <Address className="text-sm text-primary/60 font-mono" />
+                  </Identity>
+                </div>
+              )}
+            </div>
+
             {/* Pet - Current State */}
             <div className="bg-bg-card border border-primary/20 rounded-xl p-6 hover:border-primary/40 transition-all shadow-glow-cyan">
               <h2 className="text-lg font-display font-semibold mb-4 text-primary">Your Beast</h2>
@@ -265,16 +280,6 @@ export default function Profile() {
                       <span className="absolute left-1 top-1 bg-bg-dark w-4 h-4 rounded-full transition-transform peer-checked:translate-x-6 border border-primary/40"></span>
                     </span>
                   </label>
-                </div>
-
-                {/* Wallet Info */}
-                <div className="p-4 bg-bg-lcd/30 rounded-lg border border-primary/10 hover:border-primary/30 transition-all">
-                  <h3 className="font-display font-semibold text-sm mb-2 text-primary">
-                    Wallet Address
-                  </h3>
-                  <p className="text-xs text-primary/60 font-mono break-all">
-                    {userData.walletAddress}
-                  </p>
                 </div>
               </div>
             </div>

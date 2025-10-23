@@ -79,6 +79,7 @@ export function useLifeCheck(): UseLifeCheckReturn {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userAddress: address }),
+        cache: 'no-store',
       });
 
       if (!res.ok) {
