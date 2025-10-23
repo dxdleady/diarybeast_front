@@ -26,8 +26,17 @@ const chakraPetch = Chakra_Petch({
 });
 
 export const metadata: Metadata = {
-  title: 'DiaryBeast - Feed your beast, grow your mind',
-  description: 'Web3 gamified journaling app with your virtual pet companion',
+  title: 'DiaryBeast - Write Daily. Grow Your Beast. Own Your Mind.',
+  description:
+    'Your private diary with a digital companion that evolves with you. Write. Reflect. Earn DIARY tokens on Base. Your entries are encrypted—only you can read them.',
+  icons: {
+    icon: '/diary-beast-favicon-black.svg',
+  },
+  openGraph: {
+    title: 'DiaryBeast',
+    description: 'Your private diary with a digital companion that evolves with you.',
+    type: 'website',
+  },
 };
 
 export default function RootLayout({

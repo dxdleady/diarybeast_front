@@ -1,7 +1,7 @@
 'use client';
 
 import { useAccount, useSignMessage } from 'wagmi';
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 
 interface User {
@@ -23,15 +23,13 @@ export function useAuth() {
   const [error, setError] = useState<string | null>(null);
   const [hasAttempted, setHasAttempted] = useState(false);
   const [pendingMessage, setPendingMessage] = useState<string | null>(null);
+  const prevAddressRef = useRef<string | undefined>();
 
   const authenticate = useCallback(() => {
     if (!address) {
-      console.log('[Auth] No address found');
       return;
     }
 
-    console.log('[Auth] Starting authentication for address:', address);
-    console.log('[Auth] isPending:', isPending, 'isSuccess:', isSuccess, 'signError:', signError);
     setLoading(true);
     setError(null);
     setHasAttempted(true);
@@ -39,12 +37,9 @@ export function useAuth() {
     const message = 'Sign this message to authenticate with DiaryBeast';
     setPendingMessage(message);
 
-    console.log('[Auth] Requesting signature...');
-
     // Set timeout to reset loading if signature modal doesn't appear
     const timeoutId = setTimeout(() => {
       if (!signature && !signError) {
-        console.warn('[Auth] Signature request timed out - no response from wallet');
         setLoading(false);
         setPendingMessage(null);
         setError(
@@ -130,6 +125,23 @@ export function useAuth() {
     setPendingMessage(null);
   }, [signError]);
 
+  // Debug: log address changes from wagmi
+  useEffect(() => {
+    console.log('[Auth] wagmi address changed:', {
+      address,
+      isConnected,
+      toLowerCase: address?.toLowerCase(),
+    });
+  }, [address, isConnected]);
+
+  // Debug: log user changes
+  useEffect(() => {
+    console.log('[Auth] user state changed:', {
+      hasUser: !!user,
+      userAddress: user?.walletAddress,
+    });
+  }, [user]);
+
   // Debug: log isPending changes
   useEffect(() => {
     console.log('[Auth] isPending changed to:', isPending);
@@ -146,10 +158,18 @@ export function useAuth() {
   // Removed auto-authentication on wallet connect
   // Users must explicitly click to authenticate
 
-  // Reset hasAttempted when address changes
+  // Reset states when address changes (logout is handled by AuthGuard globally)
   useEffect(() => {
-    setHasAttempted(false);
-    setError(null);
+    const currentAddress = address?.toLowerCase();
+    const prevAddress = prevAddressRef.current;
+
+    if (prevAddress !== currentAddress) {
+      console.log('[Auth] Address changed, resetting states');
+      setHasAttempted(false);
+      setError(null);
+      setPendingMessage(null);
+      prevAddressRef.current = currentAddress;
+    }
   }, [address]);
 
   return {
