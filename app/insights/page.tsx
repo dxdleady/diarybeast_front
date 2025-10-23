@@ -92,7 +92,7 @@ export default function InsightsPage() {
 
   return (
     <>
-      <div className="min-h-screen bg-bg-dark text-white p-8">
+      <div className="min-h-screen bg-bg-dark text-white p-8 pb-40">
         <div className="max-w-6xl mx-auto">
           {/* Header */}
           <div className="mb-8">

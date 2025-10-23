@@ -16,43 +16,42 @@ interface User {
 
 export function useAuth() {
   const { address, isConnected } = useAccount();
-  const { signMessage, data: signature, error: signError, isSuccess, isPending } = useSignMessage();
+  const { signMessage, data: signature, error: signError } = useSignMessage();
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [hasAttempted, setHasAttempted] = useState(false);
   const [pendingMessage, setPendingMessage] = useState<string | null>(null);
   const prevAddressRef = useRef<string | undefined>();
+  const isAuthenticatingRef = useRef(false);
 
   const authenticate = useCallback(() => {
-    if (!address) {
+    if (!address || isAuthenticatingRef.current) {
       return;
     }
 
+    isAuthenticatingRef.current = true;
     setLoading(true);
     setError(null);
-    setHasAttempted(true);
 
     const message = 'Sign this message to authenticate with DiaryBeast';
     setPendingMessage(message);
 
     // Set timeout to reset loading if signature modal doesn't appear
     const timeoutId = setTimeout(() => {
-      if (!signature && !signError) {
-        setLoading(false);
-        setPendingMessage(null);
-        setError(
-          'Wallet did not respond. Please try again or check if the signature window is open.'
-        );
-      }
+      isAuthenticatingRef.current = false;
+      setLoading(false);
+      setPendingMessage(null);
+      setError(
+        'Wallet did not respond. Please try again or check if the signature window is open.'
+      );
     }, 30000); // 30 seconds timeout
 
     signMessage({ message });
 
     // Store timeout ID to clear it if signature completes
     (window as any).__authTimeout = timeoutId;
-  }, [address, signMessage, signature, signError]);
+  }, [address, signMessage]);
 
   // Handle signature result
   useEffect(() => {
@@ -92,6 +91,7 @@ export function useAuth() {
         setError(err.message || 'Failed to authenticate. Please try again.');
         setPendingMessage(null);
       } finally {
+        isAuthenticatingRef.current = false;
         setLoading(false);
       }
     };
@@ -115,6 +115,7 @@ export function useAuth() {
       setError(signError.message || 'Failed to sign message. Please try again.');
     }
 
+    isAuthenticatingRef.current = false;
     setLoading(false);
     setPendingMessage(null);
   }, [signError]);
@@ -125,7 +126,7 @@ export function useAuth() {
     const prevAddress = prevAddressRef.current;
 
     if (prevAddress !== currentAddress) {
-      setHasAttempted(false);
+      isAuthenticatingRef.current = false;
       setError(null);
       setPendingMessage(null);
       prevAddressRef.current = currentAddress;

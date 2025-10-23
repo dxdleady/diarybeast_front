@@ -192,7 +192,7 @@ export default function Shop() {
   ];
 
   return (
-    <div className={`min-h-screen text-white p-8 ${getBackgroundClass()}`}>
+    <div className={`min-h-screen text-white p-8 pb-40 ${getBackgroundClass()}`}>
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="mb-8 flex items-center justify-between">

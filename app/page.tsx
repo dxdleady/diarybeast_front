@@ -8,7 +8,7 @@ import { useAccount } from 'wagmi';
 import { useEffect, useState } from 'react';
 
 export default function Home() {
-  const { loading, error, authenticate, isAuthenticated } = useAuth();
+  const { loading, error, authenticate } = useAuth();
   const { address, isConnected } = useAccount();
   const [mounted, setMounted] = useState(false);
 
@@ -16,11 +16,33 @@ export default function Home() {
     setMounted(true);
   }, []);
 
-  const handleConnect = () => {
-    if (isConnected && address) {
-      authenticate();
+  // Auto-authenticate when wallet connects (only once per address)
+  useEffect(() => {
+    if (!mounted || !isConnected || !address) return;
+
+    // Check if we already tried to authenticate for this address
+    const authKey = `auth_attempted_${address.toLowerCase()}`;
+    const hasAttempted = sessionStorage.getItem(authKey);
+
+    if (!hasAttempted) {
+      sessionStorage.setItem(authKey, 'true');
+      // Use setTimeout to ensure it only runs once even if effect runs multiple times
+      const timeoutId = setTimeout(() => {
+        authenticate();
+      }, 0);
+      return () => clearTimeout(timeoutId);
     }
-  };
+  }, [mounted, isConnected, address, authenticate]);
+
+  // Clear auth attempt flag when address changes
+  useEffect(() => {
+    if (address) {
+      const authKey = `auth_attempted_${address.toLowerCase()}`;
+      return () => {
+        sessionStorage.removeItem(authKey);
+      };
+    }
+  }, [address]);
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-bg-dark text-primary px-4 py-6">
@@ -132,17 +154,9 @@ export default function Home() {
               {error}
             </div>
           )}
-          {!mounted ? (
+          {!mounted || loading ? (
             <button className="btn-primary font-semibold py-3 px-8 rounded-lg transition-colors font-mono">
-              Play & Grow
-            </button>
-          ) : isConnected && address ? (
-            <button
-              onClick={handleConnect}
-              disabled={loading}
-              className="btn-primary font-semibold py-3 px-8 rounded-lg transition-colors font-mono disabled:opacity-50"
-            >
-              {loading ? '[AUTHENTICATING...]' : 'Sign In'}
+              {loading ? '[AUTHENTICATING...]' : 'Play & Grow'}
             </button>
           ) : (
             <WalletConnect />

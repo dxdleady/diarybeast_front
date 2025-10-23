@@ -6,7 +6,7 @@ export default function InfoPage() {
   const router = useRouter();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-bg-dark via-bg-darker to-bg-dark text-white">
+    <div className="min-h-screen bg-gradient-to-br from-bg-dark via-bg-darker to-bg-dark text-white pb-40">
       <div className="max-w-4xl mx-auto p-8">
         {/* Header with Back Button */}
         <div className="mb-8">
