@@ -13,6 +13,7 @@ import { GlobalMusicProvider } from '@/components/GlobalMusicPlayer';
 import { PawPlayer } from '@/components/GlobalMusicPlayer/PawPlayer';
 import { GamificationProvider } from '@/lib/contexts/GamificationContext';
 import { BottomNavOverlay } from '@/components/BottomNavOverlay';
+import { AuthGuard } from '@/components/AuthGuard';
 
 const config = createConfig({
   chains: [baseSepolia, base],
@@ -46,6 +47,7 @@ export function Providers({ children }: { children: ReactNode }) {
             <MusicProvider>
               <GlobalMusicProvider>
                 <GamificationProvider>
+                  <AuthGuard />
                   <LifeCheckWrapper>{children}</LifeCheckWrapper>
                   <PawPlayer />
                   <BottomNavOverlay />

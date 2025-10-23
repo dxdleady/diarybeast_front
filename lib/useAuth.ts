@@ -1,7 +1,7 @@
 'use client';
 
 import { useAccount, useSignMessage } from 'wagmi';
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 
 interface User {
@@ -16,48 +16,42 @@ interface User {
 
 export function useAuth() {
   const { address, isConnected } = useAccount();
-  const { signMessage, data: signature, error: signError, isSuccess, isPending } = useSignMessage();
+  const { signMessage, data: signature, error: signError } = useSignMessage();
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [hasAttempted, setHasAttempted] = useState(false);
   const [pendingMessage, setPendingMessage] = useState<string | null>(null);
+  const prevAddressRef = useRef<string | undefined>(undefined);
+  const isAuthenticatingRef = useRef(false);
 
   const authenticate = useCallback(() => {
-    if (!address) {
-      console.log('[Auth] No address found');
+    if (!address || isAuthenticatingRef.current) {
       return;
     }
 
-    console.log('[Auth] Starting authentication for address:', address);
-    console.log('[Auth] isPending:', isPending, 'isSuccess:', isSuccess, 'signError:', signError);
+    isAuthenticatingRef.current = true;
     setLoading(true);
     setError(null);
-    setHasAttempted(true);
 
     const message = 'Sign this message to authenticate with DiaryBeast';
     setPendingMessage(message);
 
-    console.log('[Auth] Requesting signature...');
-
     // Set timeout to reset loading if signature modal doesn't appear
     const timeoutId = setTimeout(() => {
-      if (!signature && !signError) {
-        console.warn('[Auth] Signature request timed out - no response from wallet');
-        setLoading(false);
-        setPendingMessage(null);
-        setError(
-          'Wallet did not respond. Please try again or check if the signature window is open.'
-        );
-      }
+      isAuthenticatingRef.current = false;
+      setLoading(false);
+      setPendingMessage(null);
+      setError(
+        'Wallet did not respond. Please try again or check if the signature window is open.'
+      );
     }, 30000); // 30 seconds timeout
 
     signMessage({ message });
 
     // Store timeout ID to clear it if signature completes
     (window as any).__authTimeout = timeoutId;
-  }, [address, signMessage, isPending, isSuccess, signError, signature, signError]);
+  }, [address, signMessage]);
 
   // Handle signature result
   useEffect(() => {
@@ -69,8 +63,6 @@ export function useAuth() {
       (window as any).__authTimeout = null;
     }
 
-    console.log('[Auth] Signature received:', signature.substring(0, 10) + '...');
-
     const verifySignature = async () => {
       try {
         const res = await fetch('/api/auth/verify', {
@@ -81,7 +73,6 @@ export function useAuth() {
 
         if (!res.ok) {
           const errorData = await res.json();
-          console.error('[Auth] API error:', errorData);
           throw new Error(errorData.error || 'Authentication failed');
         }
 
@@ -97,10 +88,10 @@ export function useAuth() {
           router.push('/diary');
         }
       } catch (err: any) {
-        console.error('[Auth] Verification error:', err);
         setError(err.message || 'Failed to authenticate. Please try again.');
         setPendingMessage(null);
       } finally {
+        isAuthenticatingRef.current = false;
         setLoading(false);
       }
     };
@@ -118,38 +109,28 @@ export function useAuth() {
       (window as any).__authTimeout = null;
     }
 
-    console.error('[Auth] Signature error:', signError);
-
     if (signError.message?.includes('User rejected') || (signError as any).code === 4001) {
       setError('Signature rejected. Please try again.');
     } else {
       setError(signError.message || 'Failed to sign message. Please try again.');
     }
 
+    isAuthenticatingRef.current = false;
     setLoading(false);
     setPendingMessage(null);
   }, [signError]);
 
-  // Debug: log isPending changes
+  // Reset states when address changes (logout is handled by AuthGuard globally)
   useEffect(() => {
-    console.log('[Auth] isPending changed to:', isPending);
-  }, [isPending]);
+    const currentAddress = address?.toLowerCase();
+    const prevAddress = prevAddressRef.current;
 
-  // Debug: log signature changes
-  useEffect(() => {
-    console.log(
-      '[Auth] signature changed to:',
-      signature ? signature.substring(0, 10) + '...' : null
-    );
-  }, [signature]);
-
-  // Removed auto-authentication on wallet connect
-  // Users must explicitly click to authenticate
-
-  // Reset hasAttempted when address changes
-  useEffect(() => {
-    setHasAttempted(false);
-    setError(null);
+    if (prevAddress !== currentAddress) {
+      isAuthenticatingRef.current = false;
+      setError(null);
+      setPendingMessage(null);
+      prevAddressRef.current = currentAddress;
+    }
   }, [address]);
 
   return {

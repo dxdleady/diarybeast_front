@@ -136,7 +136,7 @@ export default function Onboarding() {
   }
 
   return (
-    <div className="min-h-screen bg-bg-dark text-primary flex items-center justify-center p-4">
+    <div className="min-h-screen bg-bg-dark text-primary flex items-center justify-center p-4 pb-40">
       <div className="max-w-2xl w-full">
         {/* Progress bar */}
         <div className="mb-8">
