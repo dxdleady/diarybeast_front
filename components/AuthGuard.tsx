@@ -12,7 +12,7 @@ export function AuthGuard() {
   const { address, isConnected } = useAccount();
   const router = useRouter();
   const pathname = usePathname();
-  const prevAddressRef = useRef<string | undefined>();
+  const prevAddressRef = useRef<string | undefined>(undefined);
   const isInitialMount = useRef(true);
 
   useEffect(() => {

@@ -22,7 +22,7 @@ export function useAuth() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pendingMessage, setPendingMessage] = useState<string | null>(null);
-  const prevAddressRef = useRef<string | undefined>();
+  const prevAddressRef = useRef<string | undefined>(undefined);
   const isAuthenticatingRef = useRef(false);
 
   const authenticate = useCallback(() => {
