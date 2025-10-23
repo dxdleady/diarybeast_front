@@ -24,6 +24,13 @@ const preview: Preview = {
         },
       ],
     },
+    nextjs: {
+      appDirectory: true,
+      navigation: {
+        pathname: '/diary',
+        push: () => {},
+      },
+    },
   },
   decorators: [
     (Story) => (

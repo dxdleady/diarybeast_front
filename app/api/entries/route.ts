@@ -136,15 +136,23 @@ export async function POST(req: NextRequest) {
     const streakBonus = Math.floor(baseStreakBonus * multiplier);
     const totalReward = rewardAmount + streakBonus;
 
-    // Create streak bonus reward if milestone reached
+    // Mint and create streak bonus reward if milestone reached
     if (streakBonus > 0 && milestone) {
+      let streakTxHash = 'mint_failed';
+      try {
+        streakTxHash = await mintTokens(userAddress, streakBonus);
+      } catch (error) {
+        console.error('Streak bonus mint failed:', error);
+        // Continue even if mint fails
+      }
+
       await prisma.reward.create({
         data: {
           userId: user.id,
           type: 'streak_bonus',
           amount: streakBonus,
           description: `${milestone.label} bonus! (${multiplier}x multiplier)`,
-          txHash: 'streak_milestone',
+          txHash: streakTxHash,
         },
       });
     }

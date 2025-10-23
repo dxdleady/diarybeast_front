@@ -107,12 +107,7 @@ export function PetEvolution() {
 
       {/* Progress Bar */}
       <div className="mt-4 w-full h-1 bg-primary/10 rounded-full overflow-hidden">
-        <div
-          className="h-full bg-gradient-to-r from-orange-300 via-green-400 via-cyan-400 to-purple-400 rounded-full"
-          style={{
-            animation: 'progressGrow 2s ease-out forwards',
-          }}
-        />
+        <div className="h-full bg-gradient-to-r from-orange-300 via-green-400 via-cyan-400 to-purple-400 rounded-full animate-progress-grow" />
       </div>
     </div>
   );

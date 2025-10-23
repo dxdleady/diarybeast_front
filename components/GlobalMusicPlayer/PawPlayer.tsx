@@ -53,12 +53,8 @@ export const PawPlayer: React.FC = () => {
       <div className="pointer-events-auto relative w-48 h-48">
         {/* Rotating text */}
         <div
-          className="absolute left-0 right-0 flex items-center justify-center pointer-events-none"
-          style={{
-            animation: 'rotate-slow 30s linear infinite',
-            animationPlayState: isPlaying ? 'running' : 'paused',
-            top: '25px',
-          }}
+          className="absolute left-0 right-0 flex items-center justify-center pointer-events-none top-[25px] animate-rotate-slow"
+          style={{ animationPlayState: isPlaying ? 'running' : 'paused' }}
         >
           <svg viewBox="0 0 200 200" className="w-48 h-48">
             <defs>
@@ -92,6 +88,7 @@ export const PawPlayer: React.FC = () => {
               rounded-full flex items-center justify-center
               backdrop-blur-md border border-primary/20
               transition-all duration-300
+              ${currentGenre === 'ambient' && isPlaying ? 'animate-pulse-slower' : ''}
             `}
             style={{
               width: currentGenre === 'ambient' ? '48px' : '44px',
@@ -99,10 +96,6 @@ export const PawPlayer: React.FC = () => {
               backgroundColor:
                 currentGenre === 'ambient' ? 'rgba(255, 255, 255, 0.4)' : 'rgba(0, 229, 255, 0.3)',
               boxShadow: currentGenre === 'ambient' ? `0 0 12px ${genres[0].glowColor}` : 'none',
-              animation:
-                currentGenre === 'ambient' && isPlaying
-                  ? 'pulse-slower 8s cubic-bezier(0.4, 0, 0.6, 1) infinite'
-                  : 'none',
             }}
           >
             <img
@@ -126,6 +119,7 @@ export const PawPlayer: React.FC = () => {
               rounded-full flex items-center justify-center
               backdrop-blur-md border border-primary/20
               transition-all duration-300
+              ${currentGenre === 'lofi' && isPlaying ? 'animate-pulse-slower' : ''}
             `}
             style={{
               width: currentGenre === 'lofi' ? '48px' : '44px',
@@ -133,10 +127,6 @@ export const PawPlayer: React.FC = () => {
               backgroundColor:
                 currentGenre === 'lofi' ? 'rgba(255, 255, 255, 0.4)' : 'rgba(0, 229, 255, 0.3)',
               boxShadow: currentGenre === 'lofi' ? `0 0 12px ${genres[1].glowColor}` : 'none',
-              animation:
-                currentGenre === 'lofi' && isPlaying
-                  ? 'pulse-slower 8s cubic-bezier(0.4, 0, 0.6, 1) infinite'
-                  : 'none',
             }}
           >
             <img
@@ -160,6 +150,7 @@ export const PawPlayer: React.FC = () => {
               rounded-full flex items-center justify-center
               backdrop-blur-md border border-primary/20
               transition-all duration-300
+              ${currentGenre === 'nature' && isPlaying ? 'animate-pulse-slower' : ''}
             `}
             style={{
               width: currentGenre === 'nature' ? '48px' : '44px',
@@ -167,10 +158,6 @@ export const PawPlayer: React.FC = () => {
               backgroundColor:
                 currentGenre === 'nature' ? 'rgba(255, 255, 255, 0.4)' : 'rgba(0, 229, 255, 0.3)',
               boxShadow: currentGenre === 'nature' ? `0 0 12px ${genres[2].glowColor}` : 'none',
-              animation:
-                currentGenre === 'nature' && isPlaying
-                  ? 'pulse-slower 8s cubic-bezier(0.4, 0, 0.6, 1) infinite'
-                  : 'none',
             }}
           >
             <img
@@ -191,12 +178,11 @@ export const PawPlayer: React.FC = () => {
         >
           <div
             className={`w-20 h-20 rounded-full flex items-center justify-center backdrop-blur-md border ${
-              isPlaying ? 'border-primary' : 'border-primary/40'
+              isPlaying ? 'border-primary animate-pulse-slow' : 'border-primary/40'
             }`}
             style={{
               backgroundColor: isPlaying ? 'rgba(0, 229, 255, 0.4)' : 'rgba(0, 229, 255, 0.2)',
               boxShadow: isPlaying ? '0 0 20px rgba(0, 229, 255, 0.6)' : 'none',
-              animation: isPlaying ? 'pulse-slow 6s cubic-bezier(0.4, 0, 0.6, 1) infinite' : 'none',
             }}
           >
             <img
