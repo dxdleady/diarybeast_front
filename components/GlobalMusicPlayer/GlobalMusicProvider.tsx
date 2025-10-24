@@ -14,13 +14,24 @@ export const GlobalMusicProvider: React.FC<{ children: React.ReactNode }> = ({ c
     audioRef.current = new Audio();
     audioRef.current.preload = 'none';
 
-    return () => {
+    // Останавливаем музыку при закрытии/перезагрузке страницы
+    const handleBeforeUnload = () => {
       if (audioRef.current) {
         audioRef.current.pause();
         audioRef.current.src = '';
       }
+      pause();
     };
-  }, []);
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener('pagehide', handleBeforeUnload);
+
+    return () => {
+      handleBeforeUnload();
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('pagehide', handleBeforeUnload);
+    };
+  }, [pause]);
 
   // Обрабатываем смену трека
   useEffect(() => {
