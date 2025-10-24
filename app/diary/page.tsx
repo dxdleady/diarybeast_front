@@ -13,13 +13,14 @@ import { DailyTimer } from '@/components/DailyTimer';
 import { WeeklySummaryModal } from '@/components/WeeklySummaryModal';
 import { GamificationModal } from '@/components/GamificationModal';
 import { useGamification } from '@/lib/contexts/GamificationContext';
+import { useUserStore } from '@/lib/stores/userStore';
 
 export default function Diary() {
   const { address } = useAccount();
   const { signMessageAsync } = useSignMessage();
   const { encryptionKey } = useEncryptionKey();
   const { showGamificationModal, closeGamificationModal } = useGamification();
-  const [userData, setUserData] = useState<any>(null);
+  const { user: userData, refreshUser, initializeUser } = useUserStore();
   const [entries, setEntries] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [content, setContent] = useState('');
@@ -31,11 +32,8 @@ export default function Diary() {
   const [showSummaryModal, setShowSummaryModal] = useState(false);
   const [summaryData, setSummaryData] = useState<any>(null);
 
-  useEffect(() => {
-    loadData();
-  }, [address]);
-
-  async function loadData() {
+  // Function to reload data (used by Pet component when stats change)
+  async function reloadData() {
     if (!address) return;
 
     try {
@@ -47,19 +45,46 @@ export default function Diary() {
       const userData = await userRes.json();
       const entriesData = await entriesRes.json();
 
-      setUserData(userData);
+      initializeUser(userData);
       setEntries(entriesData.entries || []);
     } catch (error) {
       console.error('Failed to load data:', error);
-    } finally {
-      setLoading(false);
     }
   }
 
+  // Load data on mount and when address changes
+  useEffect(() => {
+    async function loadData() {
+      if (!address) return;
+
+      try {
+        const [userRes, entriesRes] = await Promise.all([
+          fetch(`/api/user/${address}?t=${Date.now()}`, { cache: 'no-store' }),
+          fetch(`/api/entries?userAddress=${address}&t=${Date.now()}`, { cache: 'no-store' }),
+        ]);
+
+        const userData = await userRes.json();
+        const entriesData = await entriesRes.json();
+
+        initializeUser(userData);
+        setEntries(entriesData.entries || []);
+      } catch (error) {
+        console.error('Failed to load data:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [address]);
+
   async function handleSummaryGenerated(summary: any) {
-    // Reload user data to update balance FIRST
-    await loadData();
-    // THEN show modal with updated balance
+    // Refresh user data from store to update balance
+    if (address) {
+      await refreshUser(address);
+    }
+    // Show modal with updated balance
     setSummaryData(summary);
     setShowSummaryModal(true);
   }
@@ -117,8 +142,15 @@ export default function Diary() {
       setShowSuccessModal(true);
       setContent('');
 
-      // Reload data
-      await loadData();
+      // Reload data - both user and entries
+      if (address) {
+        await refreshUser(address);
+      }
+      const entriesRes = await fetch(`/api/entries?userAddress=${address}&t=${Date.now()}`, {
+        cache: 'no-store',
+      });
+      const entriesData = await entriesRes.json();
+      setEntries(entriesData.entries || []);
     } catch (error: any) {
       console.error('Save failed:', error);
       alert(error.message || 'Failed to save entry');
@@ -219,7 +251,7 @@ export default function Diary() {
 
         {/* Right Sidebar - Stats, Pet, Menu */}
         <div className="w-80 flex-shrink-0 overflow-hidden">
-          <RightSidebar userData={userData} entries={entries} onStatsChange={loadData} />
+          <RightSidebar userData={userData} entries={entries} onStatsChange={reloadData} />
         </div>
       </div>
 

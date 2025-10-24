@@ -5,38 +5,22 @@ import { Pet } from './Pet';
 import { formatLastActive } from '@/lib/gamification/lifeSystem';
 import { StreakCalendar } from './StreakCalendar';
 import { getNextMilestone } from '@/lib/gamification/streakRewards';
+import { useUserStore } from '@/lib/stores/userStore';
 
 interface Entry {
   id: string;
   date: string;
 }
 
-interface UserData {
-  selectedAnimal: 'cat' | 'dog';
-  coinsBalance: number;
-  currentStreak: number;
-  livesRemaining: number;
-  longestStreak: number;
-  totalEntries?: number;
-  lastActiveAt?: string;
-  lastEntryDate?: string;
-  petName?: string;
-  // Tamagotchi fields
-  happiness?: number;
-  lastFeedTime?: string | null;
-  lastPlayTime?: string | null;
-  inventory?: Record<string, number>;
-  petPersonality?: any;
-}
-
 interface RightSidebarProps {
-  userData: UserData | null;
+  userData?: any; // Keep for backward compatibility but will use store
   entries?: Entry[];
   onStatsChange?: () => void;
 }
 
-export function RightSidebar({ userData, entries = [], onStatsChange }: RightSidebarProps) {
+export function RightSidebar({ entries = [], onStatsChange }: RightSidebarProps) {
   const [showAchievements, setShowAchievements] = useState(false);
+  const { user: userData } = useUserStore();
 
   // Check if user has written today
   const hasWrittenToday = userData?.lastEntryDate
@@ -178,12 +162,12 @@ export function RightSidebar({ userData, entries = [], onStatsChange }: RightSid
 
         {/* Pet */}
         <div className="p-4 border-b border-primary/20">
-          {userData && (
+          {userData && userData.selectedAnimal && (
             <>
               <Pet
-                animal={userData.selectedAnimal}
+                animal={userData.selectedAnimal as 'cat' | 'dog'}
                 livesRemaining={userData.livesRemaining}
-                petName={userData.petName}
+                petName={userData.petName || undefined}
                 happiness={userData.happiness}
                 lastFeedTime={userData.lastFeedTime}
                 lastPlayTime={userData.lastPlayTime}
