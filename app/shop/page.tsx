@@ -50,6 +50,8 @@ export default function Shop() {
     }
 
     async function loadData() {
+      if (!address) return;
+
       setLoading(true);
       try {
         const [itemsRes, purchasesRes] = await Promise.all([

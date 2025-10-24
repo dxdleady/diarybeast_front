@@ -162,12 +162,12 @@ export function RightSidebar({ entries = [], onStatsChange }: RightSidebarProps)
 
         {/* Pet */}
         <div className="p-4 border-b border-primary/20">
-          {userData && (
+          {userData && userData.selectedAnimal && (
             <>
               <Pet
-                animal={userData.selectedAnimal}
+                animal={userData.selectedAnimal as 'cat' | 'dog'}
                 livesRemaining={userData.livesRemaining}
-                petName={userData.petName}
+                petName={userData.petName || undefined}
                 happiness={userData.happiness}
                 lastFeedTime={userData.lastFeedTime}
                 lastPlayTime={userData.lastPlayTime}
