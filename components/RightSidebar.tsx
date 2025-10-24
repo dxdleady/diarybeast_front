@@ -72,11 +72,11 @@ export function RightSidebar({ entries = [], onStatsChange }: RightSidebarProps)
                   {process.env.NEXT_PUBLIC_DIARY_TOKEN_ADDRESS?.slice(-4)} ↗
                 </a>
               </div>
-              {userData?.userAddress && (
+              {userData?.walletAddress && (
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-primary/60 font-mono">Your Txs:</span>
                   <a
-                    href={`https://sepolia.basescan.org/address/${userData.userAddress}#tokentxns`}
+                    href={`https://sepolia.basescan.org/address/${userData.walletAddress}#tokentxns`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-xs text-primary hover:text-accent font-mono transition-colors"
