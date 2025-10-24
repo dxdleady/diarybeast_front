@@ -37,18 +37,17 @@ export default function Diary() {
     if (!address) return;
 
     try {
-      const [userRes, entriesRes] = await Promise.all([
-        fetch(`/api/user/${address}?t=${Date.now()}`, { cache: 'no-store' }),
-        fetch(`/api/entries?userAddress=${address}&t=${Date.now()}`, { cache: 'no-store' }),
-      ]);
+      // Refresh user from store (updates balance globally)
+      await refreshUser(address);
 
-      const userData = await userRes.json();
+      // Reload entries
+      const entriesRes = await fetch(`/api/entries?userAddress=${address}&t=${Date.now()}`, {
+        cache: 'no-store',
+      });
       const entriesData = await entriesRes.json();
-
-      initializeUser(userData);
       setEntries(entriesData.entries || []);
     } catch (error) {
-      console.error('Failed to load data:', error);
+      console.error('Failed to reload data:', error);
     }
   }
 
@@ -58,15 +57,14 @@ export default function Diary() {
       if (!address) return;
 
       try {
-        const [userRes, entriesRes] = await Promise.all([
-          fetch(`/api/user/${address}?t=${Date.now()}`, { cache: 'no-store' }),
-          fetch(`/api/entries?userAddress=${address}&t=${Date.now()}`, { cache: 'no-store' }),
-        ]);
+        // Use store's refreshUser instead of direct fetch to avoid duplication
+        await refreshUser(address);
 
-        const userData = await userRes.json();
+        // Load entries
+        const entriesRes = await fetch(`/api/entries?userAddress=${address}&t=${Date.now()}`, {
+          cache: 'no-store',
+        });
         const entriesData = await entriesRes.json();
-
-        initializeUser(userData);
         setEntries(entriesData.entries || []);
       } catch (error) {
         console.error('Failed to load data:', error);

@@ -10,8 +10,8 @@
 
 Unlike traditional journaling apps, DiaryBeast leverages blockchain technology to:
 - **Encrypt your entries** with your wallet (only you can read them)
-- **Reward you with tokens** that you actually own and can spend
-- **Create verifiable proof** of your writing consistency
+- **Reward you with tokens** that you actually own and can spend on-chain
+- **Track your progress** with gamified streaks and rewards
 
 ---
 
@@ -36,10 +36,10 @@ Unlike traditional journaling apps, DiaryBeast leverages blockchain technology t
 
 ### DiaryBeast's Solution:
 
-✅ **True Ownership:** Your entries are encrypted with your wallet—only you can decrypt them
-✅ **Real Rewards:** Earn DIARY tokens you can spend in the app (not just fake points)
+✅ **True Privacy:** Your entries are encrypted with your wallet—only you can decrypt them
+✅ **Real Rewards:** Earn DIARY tokens minted on-chain that you can spend in the app (not just fake points)
 ✅ **Gamified Accountability:** Your pet's health depends on your consistency
-✅ **Blockchain Proof:** Your writing history is verifiable on-chain (encrypted, but provable)
+✅ **Web3 Ownership:** Your tokens are yours, recorded on blockchain, and can't be taken away
 
 ---
 
@@ -110,11 +110,11 @@ You own your data → You earn tokens → You are the customer
 
 | Feature | Web2 Apps | DiaryBeast (Web3) |
 |---------|-----------|-------------------|
-| Data ownership | Company | You |
-| Privacy | Promises | Cryptographic guarantee |
-| Rewards | Fake points | Real tokens you own |
-| Portability | Locked in | Wallet-based, portable |
-| Censorship | Company decides | Unstoppable (on-chain) |
+| Data ownership | Company | You (encrypted) |
+| Privacy | Promises | Cryptographic guarantee (client-side encryption) |
+| Rewards | Fake points | Real on-chain tokens you own |
+| Portability | Locked in | Wallet-based, portable keys |
+| Token security | N/A | Immutable on-chain records |
 | Transparency | Black box | Open-source smart contracts |
 
 ---
@@ -210,13 +210,16 @@ You own your data → You earn tokens → You are the customer
 
 ### Blockchain: When It Makes Sense
 We use Web3 for:
-- **Ownership:** DIARY tokens are on-chain
-- **Rewards:** Mint/burn operations need blockchain
-- **Proof:** Verify writing consistency
+- **Token Ownership:** DIARY tokens are on-chain (Base Sepolia)
+- **Token Operations:** Mint/burn transactions verified on blockchain
+- **Immutability:** Your earned rewards can't be altered or taken away
 
 We DON'T overuse blockchain:
-- Entry content stored in database (encrypted, not on-chain—too expensive)
+- Entry content stored encrypted in database (on-chain storage too expensive and slow)
+- Entry metadata tracked off-chain for performance
 - UI state managed client-side (no need for blockchain)
+
+**Roadmap:** Future versions will add on-chain entry proofs (hash + timestamp) and decentralized storage options (IPFS/Arweave)
 
 ### Privacy-First Design
 - **Zero-knowledge:** We don't know what you write
