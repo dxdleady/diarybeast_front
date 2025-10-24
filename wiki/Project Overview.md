@@ -47,7 +47,7 @@ The platform's design philosophy centers on creating an emotionally engaging exp
 
 ## Core Value Proposition
 
-DiaryBeast's core value proposition lies in its unique combination of mental wellness, blockchain ownership, and gamification mechanics. The application addresses fundamental limitations of traditional journaling apps by providing users with true ownership of their data, verifiable rewards for consistent behavior, and an emotionally engaging experience that encourages habit formation.
+DiaryBeast's core value proposition lies in its unique combination of mental wellness, blockchain ownership, and gamification mechanics. The application addresses fundamental limitations of traditional journaling apps by providing users with encrypted data privacy, on-chain token rewards for consistent behavior, and an emotionally engaging experience that encourages habit formation.
 
 Unlike conventional journaling applications where users have no real ownership of their entries and receive only abstract streak counts as motivation, DiaryBeast leverages Web3 technology to ensure that users maintain complete control over their personal content. Journal entries are encrypted using the user's wallet signature, creating a cryptographic guarantee of privacy that even the application operators cannot bypass.
 
