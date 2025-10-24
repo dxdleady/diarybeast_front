@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { BottomNavOverlay } from '@/components/BottomNavOverlay';
 import { FOOD_ITEMS, CONSUMABLE_ITEMS } from '@/lib/gamification/itemsConfig';
 import { getFoodEmoji, getFoodArt, getConsumableArt } from '@/lib/ascii/foodArt';
+import { useUserStore } from '@/lib/stores/userStore';
 
 interface ShopItem {
   id: string;
@@ -21,10 +22,10 @@ type TabType = 'food' | 'consumables' | 'animals';
 export default function Shop() {
   const { address } = useAccount();
   const router = useRouter();
-  const [userData, setUserData] = useState<any>(null);
+  const { user: userData, refreshUser, updateBalance, updateInventory } = useUserStore();
   const [items, setItems] = useState<ShopItem[]>([]);
   const [purchases, setPurchases] = useState<string[]>([]);
-  const [balance, setBalance] = useState(0);
+  const balance = userData?.coinsBalance || 0;
   const [loading, setLoading] = useState(true);
   const [purchasing, setPurchasing] = useState<string | null>(null);
   const [activeBackground, setActiveBackground] = useState<string | null>(null);
@@ -32,7 +33,15 @@ export default function Shop() {
   const [applying, setApplying] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<TabType>('food');
   const [quantity, setQuantity] = useState<Record<string, number>>({});
-  const [inventory, setInventory] = useState<Record<string, number>>({});
+  const inventory = userData?.inventory || {};
+
+  // Sync local state with userData from store
+  useEffect(() => {
+    if (userData) {
+      setActiveBackground(userData.activeBackground || null);
+      setActiveAccessory(userData.activeAccessory || null);
+    }
+  }, [userData]);
 
   useEffect(() => {
     if (!address) {
@@ -40,36 +49,30 @@ export default function Shop() {
       return;
     }
 
-    loadData();
-  }, [address]);
+    async function loadData() {
+      setLoading(true);
+      try {
+        const [itemsRes, purchasesRes] = await Promise.all([
+          fetch('/api/shop/items'),
+          fetch(`/api/shop/purchases?userAddress=${address}`),
+          refreshUser(address),
+        ]);
 
-  async function loadData() {
-    if (!address) return;
+        const itemsData = await itemsRes.json();
+        const purchasesData = await purchasesRes.json();
 
-    try {
-      const [itemsRes, purchasesRes, userRes] = await Promise.all([
-        fetch('/api/shop/items'),
-        fetch(`/api/shop/purchases?userAddress=${address}`),
-        fetch(`/api/user/${address}`),
-      ]);
-
-      const itemsData = await itemsRes.json();
-      const purchasesData = await purchasesRes.json();
-      const userData = await userRes.json();
-
-      setUserData(userData);
-      setItems(itemsData.items || []);
-      setPurchases(purchasesData.purchases.map((p: any) => p.itemId) || []);
-      setBalance(userData.coinsBalance || 0);
-      setActiveBackground(userData.activeBackground || null);
-      setActiveAccessory(userData.activeAccessory || null);
-      setInventory((userData.inventory as Record<string, number>) || {});
-    } catch (error) {
-      console.error('Failed to load shop data:', error);
-    } finally {
-      setLoading(false);
+        setItems(itemsData.items || []);
+        setPurchases(purchasesData.purchases.map((p: any) => p.itemId) || []);
+      } catch (error) {
+        console.error('Failed to load shop data:', error);
+      } finally {
+        setLoading(false);
+      }
     }
-  }
+
+    loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [address]);
 
   async function handleApply(itemId: string, itemType: string) {
     if (!address) return;
@@ -130,7 +133,15 @@ export default function Shop() {
 
       if (res.ok && data.success) {
         alert(`🎉 Purchased ${qty}x ${data.itemPurchased}!`);
-        await loadData(); // Reload to update inventory
+        // Update balance and inventory in store
+        if (data.updatedBalance !== undefined) {
+          updateBalance(data.updatedBalance);
+        }
+        if (data.inventory) {
+          updateInventory(data.inventory);
+        }
+        // Refresh full user data
+        await refreshUser(address);
       } else {
         alert(data.error || 'Purchase failed');
       }

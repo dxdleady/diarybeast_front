@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useAccount } from 'wagmi';
+import { useUserStore } from '@/lib/stores/userStore';
 
 interface Entry {
   id: string;
@@ -109,6 +110,8 @@ export function WeeklyHistory({
   onOpenGamification,
 }: WeeklyHistoryProps) {
   const { address } = useAccount();
+  const { user, updateBalance, refreshUser } = useUserStore();
+  const balance = user?.coinsBalance ?? userBalance;
   const weekGroups = groupEntriesByWeek(entries);
   const [expandedWeeks, setExpandedWeeks] = useState<Set<string>>(
     new Set(weekGroups.find((w) => w.isCurrentWeek)?.weekLabel ? [weekGroups[0].weekLabel] : [])
@@ -129,7 +132,7 @@ export function WeeklyHistory({
   };
 
   const handleGenerateSummary = async (week: WeekGroup) => {
-    if (!address || userBalance < 50) {
+    if (!address || balance < 50) {
       alert('You need 50 DIARY tokens to generate a summary');
       return;
     }
@@ -151,6 +154,16 @@ export function WeeklyHistory({
       if (!res.ok) {
         console.error('Summary generation failed:', { status: res.status, data });
         throw new Error(data.error || 'Failed to generate summary');
+      }
+
+      // Update balance in store immediately
+      if (data.newBalance !== undefined) {
+        updateBalance(data.newBalance);
+      }
+
+      // Also refresh full user data to ensure everything is in sync
+      if (address) {
+        await refreshUser(address);
       }
 
       if (onSummaryGenerated) {

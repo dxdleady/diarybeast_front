@@ -3,9 +3,10 @@
 import { OnchainKitProvider } from '@coinbase/onchainkit';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { base, baseSepolia } from 'wagmi/chains';
-import { WagmiProvider, createConfig, http } from 'wagmi';
+import { WagmiProvider, createConfig, http, useAccount, useReconnect } from 'wagmi';
 import { coinbaseWallet, injected } from 'wagmi/connectors';
-import { ReactNode } from 'react';
+import { ReactNode, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 import { EncryptionKeyProvider } from '@/lib/EncryptionKeyContext';
 import { LifeCheckWrapper } from '@/components/LifeCheckWrapper';
 import { MusicProvider } from '@/lib/contexts/MusicContext';
@@ -35,6 +36,28 @@ const config = createConfig({
 
 const queryClient = new QueryClient();
 
+/**
+ * Smart reconnect component - only reconnects on protected routes
+ */
+function SmartReconnect() {
+  const pathname = usePathname();
+  const { isConnected } = useAccount();
+  const { reconnect } = useReconnect();
+
+  useEffect(() => {
+    // Protected routes that should auto-reconnect wallet
+    const protectedRoutes = ['/diary', '/shop', '/profile', '/insights', '/info'];
+    const isProtectedRoute = protectedRoutes.some((route) => pathname?.startsWith(route));
+
+    // If on protected route and not connected, try to reconnect
+    if (isProtectedRoute && !isConnected) {
+      reconnect();
+    }
+  }, [pathname, isConnected, reconnect]);
+
+  return null;
+}
+
 export function Providers({ children }: { children: ReactNode }) {
   return (
     <WagmiProvider config={config} reconnectOnMount={false}>
@@ -47,6 +70,7 @@ export function Providers({ children }: { children: ReactNode }) {
             <MusicProvider>
               <GlobalMusicProvider>
                 <GamificationProvider>
+                  <SmartReconnect />
                   <AuthGuard />
                   <LifeCheckWrapper>{children}</LifeCheckWrapper>
                   <PawPlayer />
