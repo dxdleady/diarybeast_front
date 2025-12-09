@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Apply item effect
-    let updates: any = {
+    const updates: Record<string, unknown> = {
       lastActiveAt: new Date(),
     };
 
