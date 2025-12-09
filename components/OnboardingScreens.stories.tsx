@@ -7,8 +7,8 @@ import {
   OnboardingStep4,
 } from './OnboardingScreens';
 
-// Wrapper for Step 1
-function Step1Wrapper() {
+// Wrapper for Step 1 - Cat
+function Step1WrapperCat() {
   const [petName, setPetName] = useState('');
   return (
     <div className="min-h-screen bg-bg-dark text-primary flex items-center justify-center p-4">
@@ -19,6 +19,24 @@ function Step1Wrapper() {
           onNext={() => alert('Next clicked!')}
           animal="cat"
           animalName="Cat"
+        />
+      </div>
+    </div>
+  );
+}
+
+// Wrapper for Step 1 - Dog
+function Step1WrapperDog() {
+  const [petName, setPetName] = useState('');
+  return (
+    <div className="min-h-screen bg-bg-dark text-primary flex items-center justify-center p-4">
+      <div className="max-w-2xl w-full">
+        <OnboardingStep1
+          petName={petName}
+          setPetName={setPetName}
+          onNext={() => alert('Next clicked!')}
+          animal="dog"
+          animalName="Dog"
         />
       </div>
     </div>
@@ -97,7 +115,7 @@ const meta: Meta = {
 export default meta;
 
 export const Step1_NameYourPet_Cat: StoryObj = {
-  render: () => <Step1Wrapper />,
+  render: () => <Step1WrapperCat />,
   parameters: {
     docs: {
       description: {
@@ -108,22 +126,7 @@ export const Step1_NameYourPet_Cat: StoryObj = {
 };
 
 export const Step1_NameYourPet_Dog: StoryObj = {
-  render: () => {
-    const [petName, setPetName] = useState('');
-    return (
-      <div className="min-h-screen bg-bg-dark text-primary flex items-center justify-center p-4">
-        <div className="max-w-2xl w-full">
-          <OnboardingStep1
-            petName={petName}
-            setPetName={setPetName}
-            onNext={() => alert('Next clicked!')}
-            animal="dog"
-            animalName="Dog"
-          />
-        </div>
-      </div>
-    );
-  },
+  render: () => <Step1WrapperDog />,
   parameters: {
     docs: {
       description: {
