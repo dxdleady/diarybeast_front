@@ -33,9 +33,29 @@ export const metadata: Metadata = {
     icon: '/diary-beast-favicon-black.svg',
   },
   openGraph: {
-    title: 'DiaryBeast',
-    description: 'Your private diary with a digital companion that evolves with you.',
+    title: 'DiaryBeast - Write Daily. Grow Your Beast. Own Your Mind.',
+    description:
+      'Your private diary with a digital companion that evolves with you. Write. Reflect. Earn DIARY tokens on Base.',
     type: 'website',
+    url: 'https://app.diarybeast.xyz/',
+    siteName: 'DiaryBeast',
+    images: [
+      {
+        url: 'https://app.diarybeast.xyz/og-image.png',
+        width: 1200,
+        height: 630,
+        type: 'image/png',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    site: '@_DiaryBeast',
+    creator: '@0x10Shabsh',
+    title: 'DiaryBeast - Write Daily. Grow Your Beast. Own Your Mind.',
+    description:
+      'Your private diary with a digital companion that evolves with you. Earn DIARY tokens on Base.',
+    images: ['https://app.diarybeast.xyz/og-image.png'],
   },
 };
 
