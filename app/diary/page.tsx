@@ -31,6 +31,9 @@ export default function Diary() {
   const [successData, setSuccessData] = useState<any>(null);
   const [showSummaryModal, setShowSummaryModal] = useState(false);
   const [summaryData, setSummaryData] = useState<any>(null);
+  const [shareToWall, setShareToWall] = useState(false);
+  const [publicExcerpt, setPublicExcerpt] = useState('');
+  const [publicTags, setPublicTags] = useState<string[]>([]);
 
   // Function to reload data (used by Pet component when stats change)
   async function reloadData() {
@@ -115,6 +118,11 @@ export default function Diary() {
           signature,
           contentHash,
           wordCount: content.split(/\s+/).filter(Boolean).length,
+          ...(shareToWall &&
+            publicExcerpt.trim() && {
+              publicExcerpt: publicExcerpt.trim(),
+              publicTags,
+            }),
         }),
       });
 
@@ -139,6 +147,9 @@ export default function Diary() {
       });
       setShowSuccessModal(true);
       setContent('');
+      setShareToWall(false);
+      setPublicExcerpt('');
+      setPublicTags([]);
 
       // Reload data - both user and entries
       if (address) {
@@ -202,7 +213,7 @@ export default function Diary() {
         </div>
 
         {/* Main Content Area */}
-        <div className="flex-1 overflow-hidden relative">
+        <div className="flex-1 overflow-y-auto relative">
           {/* Daily Timer - Fixed in top right of content area */}
           <div className="absolute top-4 right-4 z-40">
             <DailyTimer hasWrittenToday={hasWrittenToday} />
@@ -211,7 +222,7 @@ export default function Diary() {
           {selectedEntry ? (
             <EntryViewer entry={selectedEntry} onBack={() => setSelectedEntry(null)} />
           ) : (
-            <div className="h-full pt-4">
+            <div className="pt-4 pb-32">
               <div className="w-full px-8">
                 <div className="mb-6 text-center">
                   <h1 className="text-4xl font-display font-bold mb-2 text-primary drop-shadow-[0_0_10px_rgba(0,229,255,0.3)]">
@@ -235,13 +246,67 @@ export default function Diary() {
                   actionButton={
                     <button
                       onClick={handleSave}
-                      disabled={!content.trim() || saving}
+                      disabled={!content.trim() || saving || (shareToWall && !publicExcerpt.trim())}
                       className="btn-primary px-6 py-2 rounded-lg font-mono text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {saving ? '[SAVING...]' : '[SAVE & SIGN]'}
                     </button>
                   }
                 />
+
+                {/* Share to The Wall */}
+                <div className="mt-4 bg-bg-card/80 backdrop-blur-md border border-primary/10 rounded-xl p-4 hover:border-primary/20 transition-all duration-300">
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={shareToWall}
+                      onChange={(e) => setShareToWall(e.target.checked)}
+                      className="w-4 h-4 accent-primary"
+                    />
+                    <span className="font-mono text-sm text-primary/80">Share to The Wall</span>
+                    <span className="font-mono text-xs text-primary/40">
+                      — publish an excerpt anonymously
+                    </span>
+                  </label>
+
+                  {shareToWall && (
+                    <div className="mt-3 space-y-3 pl-7">
+                      <textarea
+                        value={publicExcerpt}
+                        onChange={(e) => setPublicExcerpt(e.target.value)}
+                        placeholder="Write what you want to share publicly (a poem, a thought, a confession...)"
+                        rows={3}
+                        maxLength={2000}
+                        className="w-full p-3 lcd-screen rounded-lg text-primary placeholder-primary/40 resize-none focus:outline-none focus:ring-2 focus:ring-primary/50 font-mono text-sm"
+                      />
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-mono text-xs text-primary/50">Tags:</span>
+                        {['#rant', '#poem', '#feelings', '#wisdom', '#confession'].map((tag) => (
+                          <button
+                            key={tag}
+                            type="button"
+                            onClick={() =>
+                              setPublicTags((prev) =>
+                                prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
+                              )
+                            }
+                            className={`px-2 py-0.5 rounded text-xs font-mono transition-all ${
+                              publicTags.includes(tag)
+                                ? 'bg-primary/20 text-primary border border-primary/40'
+                                : 'bg-bg-lcd/50 text-primary/50 border border-primary/10 hover:border-primary/30'
+                            }`}
+                          >
+                            {tag}
+                          </button>
+                        ))}
+                      </div>
+                      <p className="font-mono text-xs text-primary/30">
+                        {publicExcerpt.length}/2000 · This will be posted anonymously. Your pet type
+                        and streak will be shown.
+                      </p>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           )}

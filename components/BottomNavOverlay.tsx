@@ -47,6 +47,12 @@ export function BottomNavOverlay() {
         'brightness(0) saturate(100%) invert(78%) sepia(61%) saturate(464%) hue-rotate(45deg) brightness(103%) contrast(106%)', // green
     },
     {
+      href: '/wall',
+      iconPath: '/assets/colletible-tamagochies---it-will-be-diffrenet-coll.svg',
+      colorFilter:
+        'brightness(0) saturate(100%) invert(70%) sepia(50%) saturate(500%) hue-rotate(340deg) brightness(105%) contrast(100%)', // pink/coral
+    },
+    {
       href: '/profile',
       iconPath: '/assets/pet-profile-tamagochi.svg',
       colorFilter:
@@ -72,8 +78,7 @@ export function BottomNavOverlay() {
       href: '/leaderboard',
       iconPath: '/assets/tamagochi-leaderboard.svg',
       colorFilter:
-        'brightness(0) saturate(100%) invert(50%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(80%) contrast(90%)', // gray (locked)
-      onClick: undefined, // locked, no action
+        'brightness(0) saturate(100%) invert(80%) sepia(48%) saturate(1000%) hue-rotate(2deg) brightness(104%) contrast(101%)', // gold
     },
     {
       iconPath: '/assets/logout_icon.svg',
@@ -83,11 +88,30 @@ export function BottomNavOverlay() {
     },
   ];
 
+  const getLabel = (item: MenuItem, isDiary: boolean): string => {
+    if (isDiary) return 'Diary';
+    switch (item.href) {
+      case '/insights':
+        return 'Insights';
+      case '/shop':
+        return 'Shop';
+      case '/wall':
+        return 'Wall';
+      case '/profile':
+        return 'Profile';
+      case '/info':
+        return 'Info';
+      case '/leaderboard':
+        return 'Ranks';
+      default:
+        return '';
+    }
+  };
+
   const renderMenuItem = (item: MenuItem, index: number, isDiary: boolean = false) => {
     const isActive = item.href && pathname === item.href;
-    const isLocked = item.href === '/leaderboard';
 
-    if (item.href && !isLocked) {
+    if (item.href) {
       return (
         <Link
           key={item.href}
@@ -115,43 +139,10 @@ export function BottomNavOverlay() {
             <span
               className={`text-[8px] font-mono uppercase tracking-wider drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)] transition-all duration-300 ${isActive ? 'text-primary' : 'text-white/80'}`}
             >
-              {isDiary
-                ? 'Diary'
-                : item.href === '/insights'
-                  ? 'Insights'
-                  : item.href === '/shop'
-                    ? 'Shop'
-                    : item.href === '/profile'
-                      ? 'Profile'
-                      : item.href === '/info'
-                        ? 'Info'
-                        : ''}
+              {getLabel(item, isDiary)}
             </span>
           </div>
         </Link>
-      );
-    } else if (isLocked) {
-      return (
-        <div
-          key={item.href}
-          className="flex flex-col items-center justify-center gap-0.5 pb-1 cursor-not-allowed opacity-50"
-        >
-          <div className="flex flex-col items-center justify-center gap-0.5 rounded-full border border-transparent transition-all duration-300 px-2 py-2">
-            <div className="w-14 h-14 flex items-center justify-center">
-              <img
-                src={item.iconPath}
-                alt=""
-                className="w-14 h-14 object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.3)]"
-                style={{
-                  filter: item.colorFilter,
-                }}
-              />
-            </div>
-            <span className="text-[8px] font-mono text-white/80 uppercase tracking-wider drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
-              Leaderboard
-            </span>
-          </div>
-        </div>
       );
     } else {
       return (

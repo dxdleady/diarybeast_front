@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { verifyMessage } from 'viem';
 import { mintTokens } from '@/lib/blockchain';
+import { randomUUID } from 'crypto';
 
 export async function POST(req: NextRequest) {
   try {
@@ -57,6 +58,7 @@ export async function POST(req: NextRequest) {
           walletAddress: address.toLowerCase(),
           selectedAnimal: randomAnimal,
           coinsBalance: initialBonus, // Initial bonus for first weekly summary
+          referralCode: `DB-${randomUUID().slice(0, 8).toUpperCase()}`,
         },
       });
 
@@ -83,6 +85,7 @@ export async function POST(req: NextRequest) {
         livesRemaining: user.livesRemaining,
         currentStreak: user.currentStreak,
         longestStreak: user.longestStreak,
+        referralCode: user.referralCode,
       },
       isNewUser,
     });

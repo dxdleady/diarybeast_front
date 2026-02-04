@@ -34,6 +34,15 @@ model User {
   lastFeedTime        DateTime?
   lastPlayTime        DateTime?
   inventory           Json?     // {timeSkip: 2, healthPotion: 1, happyPill: 3}
+
+  // Agent & viral features
+  referralCode     String?   @unique
+  referredBy       String?
+  isAgent          Boolean   @default(false)
+  rarePets         String[]  // ["lobster", "phoenix", ...]
+  authToken        String?
+  authTokenExpiry  DateTime?
+
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
 
@@ -119,4 +128,47 @@ model WeeklySummary {
 
   @@unique([userId, weekStart])
   @@index([userId])
+}
+
+model WallPost {
+  id        String     @id @default(cuid())
+  text      String     @db.Text
+  tags      String[]
+  petName   String?
+  petType   String
+  petState  String
+  streak    Int        @default(0)
+  isRarePet Boolean    @default(false)
+  likes     Int        @default(0)
+  entryId   String?
+  createdAt DateTime   @default(now())
+
+  wallLikes WallLike[]
+
+  @@index([createdAt])
+  @@index([likes])
+}
+
+model WallLike {
+  id          String   @id @default(cuid())
+  postId      String
+  fingerprint String
+  createdAt   DateTime @default(now())
+
+  post WallPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, fingerprint])
+  @@index([postId])
+}
+
+model Feedback {
+  id             String   @id @default(cuid())
+  walletAddress  String?
+  isAgent        Boolean  @default(false)
+  type           String   // "bug" | "feature" | "general" | "love"
+  message        String   @db.Text
+  contact        String?  // optional email/twitter
+  createdAt      DateTime @default(now())
+
+  @@index([createdAt])
 }

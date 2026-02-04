@@ -1,6 +1,8 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import FeedbackForm from '@/components/FeedbackForm';
+import DonateButton from '@/components/DonateButton';
 
 export default function InfoPage() {
   const router = useRouter();
@@ -183,6 +185,12 @@ export default function InfoPage() {
               </div>
             </div>
           </section>
+        </div>
+
+        {/* Feedback & Donate */}
+        <div className="mt-8 space-y-4 max-w-md mx-auto">
+          <FeedbackForm />
+          <DonateButton />
         </div>
       </div>
     </div>

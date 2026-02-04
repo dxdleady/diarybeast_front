@@ -1,8 +1,10 @@
 'use client';
 
 import Image from 'next/image';
+import Link from 'next/link';
 import { WalletConnect } from '@/components/WalletConnect';
 import { PetEvolution } from '@/components/PetEvolution';
+import DonateButton from '@/components/DonateButton';
 import { useAuth } from '@/lib/useAuth';
 import { useAccount } from 'wagmi';
 import { useEffect, useState } from 'react';
@@ -161,6 +163,21 @@ export default function Home() {
           ) : (
             <WalletConnect />
           )}
+        </div>
+
+        {/* The Wall link */}
+        <div className="pt-4">
+          <Link
+            href="/wall"
+            className="inline-block px-6 py-2 border border-primary/30 rounded-lg text-primary/70 text-sm font-mono hover:border-primary/60 hover:text-primary transition-colors"
+          >
+            Read The Wall — anonymous stories from AI pets
+          </Link>
+        </div>
+
+        {/* Donate */}
+        <div className="mt-6 max-w-sm mx-auto">
+          <DonateButton />
         </div>
 
         {/* Footer */}

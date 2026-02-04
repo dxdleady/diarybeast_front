@@ -7,26 +7,48 @@ import { calculateStreakBonus } from '@/lib/gamification/streakRewards';
 
 export async function POST(req: NextRequest) {
   try {
-    const { userAddress, encryptedContent, signature, contentHash, wordCount } = await req.json();
+    const {
+      userAddress,
+      encryptedContent,
+      signature,
+      contentHash,
+      wordCount,
+      publicExcerpt,
+      publicTags,
+    } = await req.json();
 
-    if (!userAddress || !encryptedContent || !signature || !contentHash) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
-    }
+    // Check if request is from authenticated agent (Bearer token)
+    const authHeader = req.headers.get('authorization');
+    const isAgentAuth = authHeader?.startsWith('Bearer ');
 
-    // Verify signature (with Smart Wallet fallback)
-    try {
-      const isValid = await verifyMessage({
-        address: userAddress as `0x${string}`,
-        message: { raw: contentHash as `0x${string}` },
-        signature: signature as `0x${string}`,
-      });
-
-      if (!isValid) {
-        return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
+    if (!isAgentAuth) {
+      // Browser flow: require signature
+      if (!signature || !contentHash) {
+        return NextResponse.json({ error: 'Missing signature/contentHash' }, { status: 400 });
       }
-    } catch (sigError) {
-      console.warn('Signature verification failed (Smart Wallet):', sigError);
-      // Allow for Smart Wallets in testnet
+
+      // Verify signature (with Smart Wallet fallback)
+      try {
+        const isValid = await verifyMessage({
+          address: userAddress as `0x${string}`,
+          message: { raw: contentHash as `0x${string}` },
+          signature: signature as `0x${string}`,
+        });
+        if (!isValid) {
+          return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
+        }
+      } catch (sigError) {
+        console.warn('Signature verification failed (Smart Wallet):', sigError);
+      }
+    } else {
+      // Agent flow: verify Bearer token instead of signature
+      const token = authHeader!.slice(7);
+      const tokenUser = await prisma.user.findFirst({
+        where: { authToken: token, authTokenExpiry: { gt: new Date() } },
+      });
+      if (!tokenUser || tokenUser.walletAddress !== userAddress.toLowerCase()) {
+        return NextResponse.json({ error: 'Invalid or expired token' }, { status: 401 });
+      }
     }
 
     // Find user
@@ -63,8 +85,8 @@ export async function POST(req: NextRequest) {
       data: {
         userId: user.id,
         encryptedContent,
-        signature,
-        contentHash,
+        signature: signature || 'agent_entry',
+        contentHash: contentHash || 'agent_entry',
         wordCount: wordCount || 0,
         date: new Date(),
       },
@@ -171,6 +193,23 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    // Create wall post if publicExcerpt provided
+    let wallPost = null;
+    if (publicExcerpt && typeof publicExcerpt === 'string' && publicExcerpt.trim()) {
+      wallPost = await prisma.wallPost.create({
+        data: {
+          text: publicExcerpt.trim().slice(0, 2000),
+          tags: Array.isArray(publicTags) ? publicTags.slice(0, 5) : [],
+          petName: user.petName || null,
+          petType: user.selectedAnimal || 'cat',
+          petState: user.petState,
+          streak: newStreak,
+          isRarePet: ((user as any).rarePets?.length ?? 0) > 0,
+          entryId: entry.id,
+        },
+      });
+    }
+
     return NextResponse.json({
       success: true,
       entry: {
@@ -194,6 +233,7 @@ export async function POST(req: NextRequest) {
         currentStreak: updatedUser.currentStreak,
         livesRemaining: updatedUser.livesRemaining,
       },
+      wallPost: wallPost ? { id: wallPost.id, text: wallPost.text } : null,
       livesRestored, // Include lives restored for success modal
       oldLives: user.livesRemaining, // Include old lives for before/after display
     });
@@ -210,7 +250,16 @@ export async function POST(req: NextRequest) {
 
 export async function GET(req: NextRequest) {
   try {
-    const userAddress = req.nextUrl.searchParams.get('userAddress');
+    let userAddress = req.nextUrl.searchParams.get('userAddress');
+
+    // Also check bearer token auth
+    if (!userAddress) {
+      const { authenticateRequest } = await import('@/lib/authMiddleware');
+      const authResult = await authenticateRequest(req);
+      if (authResult) {
+        userAddress = authResult.user.walletAddress;
+      }
+    }
 
     if (!userAddress) {
       return NextResponse.json({ error: 'Missing userAddress' }, { status: 400 });
