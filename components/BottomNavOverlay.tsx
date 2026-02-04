@@ -2,7 +2,9 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { useAccount, useDisconnect } from 'wagmi';
+import { useDisconnect } from 'wagmi';
+import { useSession } from '@/lib/useSession';
+import { useAgent } from '@/lib/AgentSessionContext';
 
 interface MenuItem {
   href?: string;
@@ -14,17 +16,26 @@ interface MenuItem {
 export function BottomNavOverlay() {
   const pathname = usePathname();
   const router = useRouter();
-  const { isConnected } = useAccount();
+  const { isConnected, isAgentSession } = useSession();
   const { disconnect } = useDisconnect();
+  const { agentLogout } = useAgent();
 
-  // Don't show menu on auth page, onboarding, or when not connected
-  if (!isConnected || pathname === '/' || pathname === '/onboarding') {
+  // Don't show menu on auth page, onboarding, magic auth, or when not connected
+  if (
+    !isConnected ||
+    pathname === '/' ||
+    pathname === '/onboarding' ||
+    pathname?.startsWith('/auth/magic')
+  ) {
     return null;
   }
 
   const handleLogout = async () => {
-    // Disconnect wallet first
-    disconnect();
+    if (isAgentSession) {
+      agentLogout();
+    } else {
+      disconnect();
+    }
 
     // Small delay to ensure disconnect completes
     await new Promise((resolve) => setTimeout(resolve, 100));

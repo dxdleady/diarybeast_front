@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { useAccount } from 'wagmi';
+import { useSession } from '@/lib/useSession';
 import { getStaticPetFrame } from '@/lib/ascii/getStaticPet';
 import type { Animal, PetState } from '@/lib/ascii/types';
 
@@ -38,7 +38,7 @@ function AsciiPetStatic({ petType, petState }: { petType: string; petState: stri
 }
 
 export default function WallPostClient({ post }: { post: WallPost }) {
-  const { address, isConnected } = useAccount();
+  const { address, isConnected } = useSession();
   const [likes, setLikes] = useState(post.likes);
   const [liked, setLiked] = useState(false);
 

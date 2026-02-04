@@ -1,12 +1,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useAccount } from 'wagmi';
 import { useRouter } from 'next/navigation';
 import { BottomNavOverlay } from '@/components/BottomNavOverlay';
 import { FOOD_ITEMS, CONSUMABLE_ITEMS } from '@/lib/gamification/itemsConfig';
 import { getFoodEmoji, getFoodArt, getConsumableArt } from '@/lib/ascii/foodArt';
 import { useUserStore } from '@/lib/stores/userStore';
+import { useSession } from '@/lib/useSession';
 
 interface ShopItem {
   id: string;
@@ -20,7 +20,7 @@ interface ShopItem {
 type TabType = 'food' | 'consumables' | 'animals';
 
 export default function Shop() {
-  const { address } = useAccount();
+  const { address } = useSession();
   const router = useRouter();
   const { user: userData, refreshUser, updateBalance, updateInventory } = useUserStore();
   const [items, setItems] = useState<ShopItem[]>([]);

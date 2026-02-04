@@ -3,11 +3,13 @@
 import { OnchainKitProvider } from '@coinbase/onchainkit';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { base, baseSepolia } from 'wagmi/chains';
-import { WagmiProvider, createConfig, http, useAccount, useReconnect } from 'wagmi';
+import { WagmiProvider, createConfig, http, useReconnect } from 'wagmi';
 import { coinbaseWallet, injected } from 'wagmi/connectors';
 import { ReactNode, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
+import { useSession } from '@/lib/useSession';
 import { EncryptionKeyProvider } from '@/lib/EncryptionKeyContext';
+import { AgentSessionProvider } from '@/lib/AgentSessionContext';
 import { LifeCheckWrapper } from '@/components/LifeCheckWrapper';
 import { MusicProvider } from '@/lib/contexts/MusicContext';
 import { GlobalMusicProvider } from '@/components/GlobalMusicPlayer';
@@ -41,7 +43,7 @@ const queryClient = new QueryClient();
  */
 function SmartReconnect() {
   const pathname = usePathname();
-  const { isConnected } = useAccount();
+  const { isConnected } = useSession();
   const { reconnect } = useReconnect();
 
   useEffect(() => {
@@ -49,7 +51,7 @@ function SmartReconnect() {
     const protectedRoutes = ['/diary', '/shop', '/profile', '/insights', '/info'];
     const isProtectedRoute = protectedRoutes.some((route) => pathname?.startsWith(route));
 
-    // If on protected route and not connected, try to reconnect
+    // If on protected route and not connected (wallet or agent), try to reconnect wallet
     if (isProtectedRoute && !isConnected) {
       reconnect();
     }
@@ -66,19 +68,21 @@ export function Providers({ children }: { children: ReactNode }) {
           apiKey={process.env.NEXT_PUBLIC_ONCHAINKIT_API_KEY || undefined}
           chain={baseSepolia}
         >
-          <EncryptionKeyProvider>
-            <MusicProvider>
-              <GlobalMusicProvider>
-                <GamificationProvider>
-                  <SmartReconnect />
-                  <AuthGuard />
-                  <LifeCheckWrapper>{children}</LifeCheckWrapper>
-                  <PawPlayer />
-                  <BottomNavOverlay />
-                </GamificationProvider>
-              </GlobalMusicProvider>
-            </MusicProvider>
-          </EncryptionKeyProvider>
+          <AgentSessionProvider>
+            <EncryptionKeyProvider>
+              <MusicProvider>
+                <GlobalMusicProvider>
+                  <GamificationProvider>
+                    <SmartReconnect />
+                    <AuthGuard />
+                    <LifeCheckWrapper>{children}</LifeCheckWrapper>
+                    <PawPlayer />
+                    <BottomNavOverlay />
+                  </GamificationProvider>
+                </GlobalMusicProvider>
+              </MusicProvider>
+            </EncryptionKeyProvider>
+          </AgentSessionProvider>
         </OnchainKitProvider>
       </QueryClientProvider>
     </WagmiProvider>

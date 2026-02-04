@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useAccount } from 'wagmi';
 import { useRouter } from 'next/navigation';
 import { AsciiPet } from '@/components/AsciiPet';
+import { useSession } from '@/lib/useSession';
 
 const AGE_GROUPS = ['13-17', '18-24', '25-34', '35-44', '45-54', '55+'];
 
@@ -53,7 +53,7 @@ const DIARY_GOALS = [
 ];
 
 export default function Onboarding() {
-  const { address } = useAccount();
+  const { address } = useSession();
   const router = useRouter();
   const [step, setStep] = useState(1);
   const [selectedAnimal, setSelectedAnimal] = useState<'cat' | 'dog' | null>(null);

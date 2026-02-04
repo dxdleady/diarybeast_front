@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useAccount } from 'wagmi';
 import { useRouter } from 'next/navigation';
+import { useSession } from '@/lib/useSession';
 import { WeeklySummaryModal } from '@/components/WeeklySummaryModal';
 import { BottomNavOverlay } from '@/components/BottomNavOverlay';
 
@@ -24,7 +24,7 @@ const TREND_CONFIG = {
 };
 
 export default function InsightsPage() {
-  const { address } = useAccount();
+  const { address } = useSession();
   const router = useRouter();
   const [summaries, setSummaries] = useState<WeeklySummary[]>([]);
   const [loading, setLoading] = useState(true);

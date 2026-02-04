@@ -135,9 +135,14 @@ export async function POST(req: NextRequest) {
       data: updateData,
     });
 
+    // Build magic link for UI access
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://dapp.diarybeast.xyz';
+    const magicLink = `${baseUrl}/auth/magic?token=${token}`;
+
     return NextResponse.json({
       success: true,
       token,
+      magicLink,
       expiresAt: expiresAt.toISOString(),
       user: {
         walletAddress: user.walletAddress,

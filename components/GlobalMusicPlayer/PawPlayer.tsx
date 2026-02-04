@@ -1,12 +1,12 @@
 'use client';
 
 import React from 'react';
-import { useAccount } from 'wagmi';
+import { useSession } from '@/lib/useSession';
 import { usePathname } from 'next/navigation';
 import { useMusicPlayerStore, type Genre as GenreType } from '@/lib/stores/musicPlayerStore';
 
 export const PawPlayer: React.FC = () => {
-  const { isConnected } = useAccount();
+  const { isConnected } = useSession();
   const pathname = usePathname();
   const { currentGenre, isPlaying, setGenre, togglePlay } = useMusicPlayerStore();
 

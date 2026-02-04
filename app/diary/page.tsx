@@ -1,6 +1,6 @@
 'use client';
 
-import { useAccount, useSignMessage } from 'wagmi';
+import { useSignMessage } from 'wagmi';
 import { useEffect, useState } from 'react';
 import { encryptContent, hashContent } from '@/lib/encryption';
 import { WeeklyHistory } from '@/components/WeeklyHistory';
@@ -14,9 +14,10 @@ import { WeeklySummaryModal } from '@/components/WeeklySummaryModal';
 import { GamificationModal } from '@/components/GamificationModal';
 import { useGamification } from '@/lib/contexts/GamificationContext';
 import { useUserStore } from '@/lib/stores/userStore';
+import { useSession } from '@/lib/useSession';
 
 export default function Diary() {
-  const { address } = useAccount();
+  const { address, isAgentSession, agentToken } = useSession();
   const { signMessageAsync } = useSignMessage();
   const { encryptionKey } = useEncryptionKey();
   const { showGamificationModal, closeGamificationModal } = useGamification();
@@ -103,20 +104,28 @@ export default function Diary() {
       // 2. Hash content
       const contentHash = hashContent(content);
 
-      // 4. Sign hash
-      const signature = await signMessageAsync({
-        message: { raw: contentHash },
-      });
+      // 3. Sign hash (skip for agent sessions — auth via Bearer token)
+      let signature: string | undefined;
+      if (!isAgentSession) {
+        signature = await signMessageAsync({
+          message: { raw: contentHash },
+        });
+      }
 
-      // 5. Save to API
+      // 4. Save to API
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (isAgentSession && agentToken) {
+        headers['Authorization'] = `Bearer ${agentToken}`;
+      }
+
       const res = await fetch('/api/entries', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({
           userAddress: address,
           encryptedContent,
-          signature,
-          contentHash,
+          ...(signature && { signature }),
+          ...(contentHash && { contentHash }),
           wordCount: content.split(/\s+/).filter(Boolean).length,
           ...(shareToWall &&
             publicExcerpt.trim() && {
@@ -249,7 +258,7 @@ export default function Diary() {
                       disabled={!content.trim() || saving || (shareToWall && !publicExcerpt.trim())}
                       className="btn-primary px-6 py-2 rounded-lg font-mono text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      {saving ? '[SAVING...]' : '[SAVE & SIGN]'}
+                      {saving ? '[SAVING...]' : isAgentSession ? '[SAVE]' : '[SAVE & SIGN]'}
                     </button>
                   }
                 />

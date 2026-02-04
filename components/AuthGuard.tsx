@@ -1,15 +1,15 @@
 'use client';
 
-import { useAccount } from 'wagmi';
 import { useEffect, useRef } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
+import { useSession } from '@/lib/useSession';
 
 /**
- * Global component that watches for wallet address changes
+ * Global component that watches for wallet/agent address changes
  * and handles logout when user switches wallets
  */
 export function AuthGuard() {
-  const { address, isConnected } = useAccount();
+  const { address, isConnected } = useSession();
   const router = useRouter();
   const pathname = usePathname();
   const prevAddressRef = useRef<string | undefined>(undefined);

@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, ReactNode, useMemo } from 'react';
-import { useAccount } from 'wagmi';
+import { useSession } from './useSession';
 import { getEncryptionKey } from './encryption';
 
 interface EncryptionKeyContextType {
@@ -9,17 +9,15 @@ interface EncryptionKeyContextType {
   isLoading: boolean;
 }
 
-const EncryptionKeyContext = createContext<EncryptionKeyContextType | undefined>(
-  undefined
-);
+const EncryptionKeyContext = createContext<EncryptionKeyContextType | undefined>(undefined);
 
 /**
  * Simplified encryption context for DiaryBeast
- * Uses deterministic key derivation from wallet address
+ * Uses deterministic key derivation from wallet or agent address
  * No signatures required, works across all devices
  */
 export function EncryptionKeyProvider({ children }: { children: ReactNode }) {
-  const { address, isConnected } = useAccount();
+  const { address, isConnected } = useSession();
 
   const encryptionKey = useMemo(() => {
     if (!address || !isConnected) return null;
@@ -27,9 +25,7 @@ export function EncryptionKeyProvider({ children }: { children: ReactNode }) {
   }, [address, isConnected]);
 
   return (
-    <EncryptionKeyContext.Provider
-      value={{ encryptionKey, isLoading: false }}
-    >
+    <EncryptionKeyContext.Provider value={{ encryptionKey, isLoading: false }}>
       {children}
     </EncryptionKeyContext.Provider>
   );

@@ -6,12 +6,12 @@ import { WalletConnect } from '@/components/WalletConnect';
 import { PetEvolution } from '@/components/PetEvolution';
 import DonateButton from '@/components/DonateButton';
 import { useAuth } from '@/lib/useAuth';
-import { useAccount } from 'wagmi';
+import { useSession } from '@/lib/useSession';
 import { useEffect, useState } from 'react';
 
 export default function Home() {
   const { loading, error, authenticate } = useAuth();
-  const { address, isConnected } = useAccount();
+  const { address, isConnected } = useSession();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {

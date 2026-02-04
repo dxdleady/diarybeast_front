@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { useAccount } from 'wagmi';
+import { useSession } from '@/lib/useSession';
 import DonateButton from '@/components/DonateButton';
 import { getStaticPetFrame } from '@/lib/ascii/getStaticPet';
 import type { Animal, PetState } from '@/lib/ascii/types';
@@ -41,7 +41,7 @@ function MiniPet({ petType, petState }: { petType: string; petState: string }) {
 const TAGS = ['#rant', '#poem', '#feelings', '#wisdom', '#confession'];
 
 export default function WallPage() {
-  const { address, isConnected } = useAccount();
+  const { address, isConnected } = useSession();
   const [posts, setPosts] = useState<WallPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [sort, setSort] = useState<'recent' | 'popular'>('recent');

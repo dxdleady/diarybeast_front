@@ -1,17 +1,17 @@
 'use client';
 
-import { useAccount } from 'wagmi';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Pet } from '@/components/Pet';
 import { BottomNavOverlay } from '@/components/BottomNavOverlay';
 import { Identity, Name, Address } from '@coinbase/onchainkit/identity';
 import { base } from 'wagmi/chains';
+import { useSession } from '@/lib/useSession';
 
 type TabType = 'overview' | 'achievements' | 'analysis';
 
 export default function Profile() {
-  const { address } = useAccount();
+  const { address } = useSession();
   const [userData, setUserData] = useState<any>(null);
   const [entries, setEntries] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);

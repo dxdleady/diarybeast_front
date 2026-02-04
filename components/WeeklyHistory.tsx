@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useAccount } from 'wagmi';
+import { useSession } from '@/lib/useSession';
 import { useUserStore } from '@/lib/stores/userStore';
 
 interface Entry {
@@ -109,7 +109,7 @@ export function WeeklyHistory({
   userBalance = 0,
   onOpenGamification,
 }: WeeklyHistoryProps) {
-  const { address } = useAccount();
+  const { address } = useSession();
   const { user, updateBalance, refreshUser } = useUserStore();
   const balance = user?.coinsBalance ?? userBalance;
   const weekGroups = groupEntriesByWeek(entries);

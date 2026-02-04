@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useAccount } from 'wagmi';
+import { useSession } from '@/lib/useSession';
 
 const TYPES = [
   { value: 'love', label: '♥ Love it' },
@@ -11,7 +11,7 @@ const TYPES = [
 ];
 
 export default function FeedbackForm() {
-  const { address } = useAccount();
+  const { address } = useSession();
   const [open, setOpen] = useState(false);
   const [type, setType] = useState('general');
   const [message, setMessage] = useState('');

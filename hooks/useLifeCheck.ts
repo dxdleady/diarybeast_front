@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useAccount } from 'wagmi';
+import { useSession } from '@/lib/useSession';
 import { usePathname } from 'next/navigation';
 import { didCrossMidnight } from '@/lib/gamification/lifeSystem';
 
@@ -43,7 +43,7 @@ export interface UseLifeCheckReturn {
  * ```
  */
 export function useLifeCheck(): UseLifeCheckReturn {
-  const { address, isConnected } = useAccount();
+  const { address, isConnected } = useSession();
   const pathname = usePathname();
 
   const [isChecking, setIsChecking] = useState(false);
