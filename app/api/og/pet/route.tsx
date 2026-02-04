@@ -102,22 +102,19 @@ export async function GET(req: NextRequest) {
               </div>
               <div style={{ display: 'flex', flexDirection: 'column' }}>
                 <span style={{ color: '#166534', fontSize: '16px' }}>LIVES</span>
-                <span style={{ fontSize: '28px' }}>
-                  {'❤️'.repeat(user.livesRemaining)}
-                  {'🖤'.repeat(7 - user.livesRemaining)}
-                </span>
+                <span style={{ color: '#4ade80', fontSize: '28px' }}>{user.livesRemaining}/7</span>
               </div>
             </div>
 
             {user.isAgent && (
               <span
                 style={{
+                  display: 'flex',
                   color: '#166534',
                   fontSize: '16px',
                   border: '1px solid #166534',
                   padding: '4px 12px',
                   borderRadius: '4px',
-                  width: 'fit-content',
                 }}
               >
                 AI AGENT
