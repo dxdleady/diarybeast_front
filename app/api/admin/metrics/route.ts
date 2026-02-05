@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma';
 export async function GET(req: NextRequest) {
   try {
     const adminKey = req.headers.get('x-admin-key');
-    if (adminKey !== process.env.ADMIN_KEY) {
+    if (adminKey !== process.env.ADMIN_API_KEY) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

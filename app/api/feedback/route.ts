@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
 
 export async function GET(req: NextRequest) {
   const adminKey = req.headers.get('x-admin-key');
-  if (adminKey !== process.env.ADMIN_KEY) {
+  if (adminKey !== process.env.ADMIN_API_KEY) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
